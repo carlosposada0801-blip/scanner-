@@ -9,6 +9,9 @@ buy fast.
 - **Storage:** a local SQLite file (`prices.db`) holding price history
 - Uses **official APIs only** and stays well under their rate limits
 
+> Also in this repo: **[Photo Recovery](photo_recovery/README.md)**, a tool that finds
+> deleted photos from iPhone/iPad backups, Mac Photos libraries and memory cards.
+
 ---
 
 ## How it works
