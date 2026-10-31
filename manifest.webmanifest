@@ -1,0 +1,14 @@
+{
+  "name": "Hidden Word",
+  "short_name": "Hidden Word",
+  "description": "Memorize Scripture with spaced repetition.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0d1e",
+  "theme_color": "#0b0d1e",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

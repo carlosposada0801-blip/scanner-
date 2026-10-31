@@ -1,8 +1,2 @@
-.env
-*.db
-*.db-journal
-logs/
-__pycache__/
-.pytest_cache/
-.venv/
-venv/
+node_modules/
+.DS_Store
