@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, serve cache-first, refresh in background.
-const CACHE = 'hidden-word-v1';
+const CACHE = 'hidden-word-v2';
 const SHELL = ['./', 'index.html', 'styles.css', 'js/verses.js', 'js/engine.js', 'js/fx.js', 'js/app.js', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
