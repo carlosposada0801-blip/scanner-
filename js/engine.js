@@ -67,8 +67,10 @@
       badges: {},
       stats: { words: 0, firstTry: 0, attempts: 0, reviews: 0, bestCombo: 0, sessions: 0, refRight: 0, refTotal: 0 },
       // restDay: weekday (0 = Sunday) that never breaks a streak, or -1 for none.
-      settings: { goal: 100, sound: true, haptics: true, tr: 'BSB', restDay: 0, remindAt: '07:30', name: '' },
+      settings: { goal: 100, sound: true, haptics: true, tr: 'BSB', restDay: 0, remindAt: '07:30', name: '', esvKey: '' },
       notes: {},
+      // Your own copies of copyrighted translations (NIV, ESV, NASB), keyed "NIV:jhn3-16". Never leaves the device.
+      texts: {},
       challenges: {},
       seen: 2,
       onboarded: false,
@@ -83,7 +85,7 @@
       if (s && s.v === 1) {
         // Cards saved before translations existed were learned in the KJV.
         for (const c of Object.values(s.cards || {})) if (!c.tr) c.tr = 'KJV';
-        return { ...d, seen: 1, ...s, settings: { ...d.settings, ...s.settings }, stats: { ...d.stats, ...s.stats }, streak: { ...d.streak, ...s.streak } };
+        return { ...d, seen: 1, ...s, texts: s.texts || {}, settings: { ...d.settings, ...s.settings }, stats: { ...d.stats, ...s.stats }, streak: { ...d.streak, ...s.streak } };
       }
     } catch (e) { /* corrupt or unavailable storage: start fresh */ }
     return d;
@@ -103,7 +105,12 @@
     E.state = load(); E.reindex();
   };
 
-  E.TRANSLATIONS = { BSB: 'Berean Standard Bible', KJV: 'King James Version' };
+  E.TRANSLATIONS = {
+    BSB: 'Berean Standard Bible', KJV: 'King James Version', ASV: 'American Standard Version',
+    NIV: 'New International Version', ESV: 'English Standard Version', NASB: 'New American Standard Bible',
+  };
+  // Built in (public domain). The others are copyrighted, so you paste each verse once and it stays on this device.
+  E.BUILTIN = ['BSB', 'KJV', 'ASV'];
   E.reindex = () => {
     const m = {};
     for (const p of PACKS) for (const v of p.verses) if (!m[v.id]) m[v.id] = { ...v, pack: p.id };
@@ -118,8 +125,20 @@
     if (v.pack === 'custom') return v;
     const c = E.state.cards[id];
     const t = tr || (c && c.tr) || E.state.settings.tr;
-    return { ...v, tr: t, text: v[t.toLowerCase()] };
+    return { ...v, tr: t, text: E.textFor(v, t) };
   };
+  // Undefined when a pasted translation hasn't been added yet.
+  E.textFor = (v, t) => {
+    if (E.BUILTIN.includes(t)) return v[t.toLowerCase()];
+    const own = E.state.texts[`${t}:${v.id}`];
+    if (own) return own;
+    if (v.chain) {
+      const parts = v.chain.map(id => E.textFor(E.verses[id], t));
+      if (parts.every(Boolean)) return parts.join(' ');
+    }
+    return undefined;
+  };
+  E.setText = (id, tr, text) => { E.state.texts[`${tr}:${id}`] = text; E.save(); };
   E.packsFor = id => PACKS.filter(p => p.verses.some(v => v.id === id));
 
   // Em dashes join words in the BSB ("morning—the"); treat each side as its own word.

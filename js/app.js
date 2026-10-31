@@ -27,6 +27,8 @@
         stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
     </svg>`;
   }
+  // Text to display; falls back to the BSB when a pasted translation isn't added yet.
+  const shown = v => v.text || E.textFor(E.verses[v.id], 'BSB') || '';
   const snippet = (text, n = 12) => { const w = text.split(' '); return esc(w.slice(0, n).join(' ')) + (w.length > n ? '…' : ''); };
   const statusOf = id => {
     const c = E.card(id);
@@ -90,11 +92,11 @@
       next = `
         <div class="label">${stage && !(v.chain && stage === 3) ? 'Keep going' : v.chain ? 'Whole passage' : 'Next verse'}</div>
         <div class="ref">${esc(v.title || v.ref)}</div>
-        <div class="snippet">${snippet(v.text, 14)}</div>
+        <div class="snippet">${snippet(shown(v), 14)}</div>
         <div class="ladder">${E.STAGES.map((_, i) => `<i class="${i < stage ? 'on' : ''}"></i>`).join('')}</div>
         <div class="chips">
           ${due.length ? `<span class="chip warn">↻ ${plural(due.length, 'memory check')}</span>` : ''}
-          <span class="chip">≈ ${Math.max(2, Math.round(v.text.split(' ').length / 8) + due.length)} min</span>
+          <span class="chip">≈ ${Math.max(2, Math.round(shown(v).split(' ').length / 8) + due.length)} min</span>
         </div>
         <button class="btn primary block" data-action="start">${stage || mem.length ? 'Continue' : 'Begin'}</button>`;
     } else if (due.length) {
@@ -163,7 +165,7 @@
     else stat = c.due <= Date.now() ? 'Check due' : `Check ${fmtDue(c.due)}`;
     return `<div class="row${v.chain ? ' chain' : ''}" data-verse="${esc(v.id)}">
       <span class="dot ${s}">${v.chain ? '📖' : ''}</span>
-      <div class="rmain"><div class="rref">${esc(v.title ? `${v.title} · ${v.ref}` : v.ref)}</div><div class="rtext">${esc(v.text)}</div></div>
+      <div class="rmain"><div class="rref">${esc(v.title ? `${v.title} · ${v.ref}` : v.ref)}</div><div class="rtext">${esc(shown(v))}</div></div>
       <span class="rstat">${stat}</span>
     </div>`;
   }
@@ -196,7 +198,8 @@
     const topics = PACKS.filter(p => terms.some(t => (p.tags + ' ' + p.name).toLowerCase().includes(t)));
     const seen = new Set();
     const hits = Object.values(E.verses).filter(v => {
-      const hay = `${v.ref} ${v.title || ''} ${v.kjv || ''} ${v.bsb || ''} ${v.text || ''}`.toLowerCase();
+      const own = Object.keys(E.TRANSLATIONS).map(t => E.state.texts[`${t}:${v.id}`] || '').join(' ');
+      const hay = `${v.ref} ${v.title || ''} ${v.kjv || ''} ${v.bsb || ''} ${v.asv || ''} ${v.text || ''} ${own}`.toLowerCase();
       return terms.length && terms.every(t => hay.includes(t));
     });
     const rows = [...topics.flatMap(p => p.verses), ...hits].filter(v => !seen.has(v.id) && seen.add(v.id));
@@ -283,7 +286,8 @@
       <div class="card glass" style="padding:8px 18px">
         <div class="setting"><span>Daily goal</span>
           <span class="stepper"><button class="icon-btn" data-action="goal" data-d="-25">−</button>${st.settings.goal} XP<button class="icon-btn" data-action="goal" data-d="25">+</button></span></div>
-        <div class="setting"><span>Translation<div class="muted small">For verses you start from now on</div></span>${sel('tr', Object.entries(E.TRANSLATIONS).map(([k, n]) => [k, `${k} · ${n.replace(/ (Standard Bible|Version)$/, '')}`]))}</div>
+        <div class="setting"><span>Translation<div class="muted small">For verses you start from now on</div></span>${sel('tr', Object.keys(E.TRANSLATIONS).map(k => [k, k]))}</div>
+        ${st.settings.tr === 'ESV' || st.settings.esvKey ? `<div class="setting"><span>ESV API key<div class="muted small">Free for personal use from <a href="https://api.esv.org/account/create-application/" target="_blank" rel="noopener" style="color:var(--accent)">api.esv.org</a>. Fills ESV verses in for you</div></span><input class="select" type="password" data-setting="esvKey" value="${esc(st.settings.esvKey)}" placeholder="Optional" autocomplete="off" style="width:130px"></div>` : ''}
         <div class="setting"><span>Sabbath rest day<div class="muted small">Never breaks your streak</div></span>${sel('restDay', [[-1, 'None'], ...WEEKDAYS.map((d, i) => [i, d])])}</div>
         <div class="setting"><span>Your name<div class="muted small">Shown on challenges you send</div></span><input class="select" data-setting="name" value="${esc(st.settings.name)}" placeholder="Optional" maxlength="24" style="width:130px"></div>
         <div class="setting"><span>Sounds</span><button class="toggle ${st.settings.sound ? 'on' : ''}" data-action="toggle" data-key="sound" aria-label="Sounds"></button></div>
@@ -302,7 +306,7 @@
         <div class="setting"><span>Backup file</span><span style="display:flex;gap:8px"><button class="btn ghost sm" data-action="export">Export</button><button class="btn ghost sm" data-action="import">Import</button></span></div>
         <div class="setting"><span>Start over</span><button class="btn ghost sm danger" data-action="reset-all">Reset</button></div>
       </div>
-      <p class="muted small" style="text-align:center;margin-top:18px">Scripture: KJV (public domain) and Berean Standard Bible (BSB), dedicated to the public domain.</p>
+      <p class="muted small" style="text-align:center;margin-top:18px">Built in: KJV and ASV (public domain) and the Berean Standard Bible (BSB), dedicated to the public domain.<br>NIV, ESV and NASB text you add is stored only on this device.</p>
     `;
   }
 
@@ -314,6 +318,7 @@
     $('#sheet').classList.add('show');
   }
   function closeSheet() {
+    if (textResolve) { const r = textResolve; textResolve = null; r(false); }
     $('#backdrop').classList.remove('show');
     $('#sheet').classList.remove('show');
   }
@@ -342,22 +347,26 @@
         <button class="btn ghost" data-action="learn-next" data-id="${esc(id)}">Make it my next verse</button>
         <button class="btn ghost" data-action="challenge" data-id="${esc(id)}">🤝 Invite a friend to learn it</button>`;
     }
-    if (v.pack !== 'custom') {
-      const other = Object.keys(E.TRANSLATIONS).find(t => t !== v.tr);
-      actions += c ? `<button class="btn ghost sm" data-action="switch-tr" data-id="${esc(id)}" data-tr="${other}">Restart in ${other}</button>`
-        : `<button class="btn ghost sm" data-action="preview-tr" data-id="${esc(id)}" data-tr="${other}">Show ${other}</button>`;
+    if (v.pack !== 'custom' && !E.BUILTIN.includes(v.tr) && v.text) {
+      actions += `<button class="btn ghost sm" data-action="edit-text" data-id="${esc(id)}" data-tr="${v.tr}">Edit ${v.tr} wording</button>`;
     }
     if (v.pack === 'custom') actions += `<button class="btn ghost danger" data-action="delete-custom" data-id="${esc(id)}">Delete verse</button>`;
     const ch = E.state.challenges[id];
     openSheet(`
       <div class="eyebrow">${esc(v.title ? v.title + ' · ' : '')}${esc(v.tr)}</div>
       <h1 style="font-family:var(--serif);font-size:30px">${esc(v.ref)}</h1>
-      <div class="vtext" id="sheet-vtext">${esc(v.text)}</div>
+      ${v.pack === 'custom' ? '' : `<div class="chips tr-chips">${Object.keys(E.TRANSLATIONS).map(t =>
+        `<button class="chip ${t === v.tr ? 'on' : ''}" data-action="preview-tr" data-id="${esc(id)}" data-tr="${t}">${t}</button>`).join('')}</div>`}
+      <div class="vtext" id="sheet-vtext">${v.text ? esc(v.text) : missingText(v)}</div>
+      <div id="sheet-switch"></div>
       ${info}
       ${ch ? `<div class="card glass small" style="margin-top:12px">🤝 <b>${esc(ch.n || 'A friend')}</b> challenged you: ${ch.a}%${ch.s ? ` in ${ch.s}s` : ''}${c && c.best ? ` · you: ${c.bestAcc ?? '—'}% in ${c.best}s` : ''}</div>` : ''}
       ${noteField(id)}
       <div class="actions">${actions}</div>`);
   }
+
+  const missingText = v => `<span class="muted">${esc(shown(v))}</span>
+    <div class="muted small" style="font-family:var(--sans);margin-top:8px">↑ BSB shown. You’ll paste the ${esc(v.tr)} wording the first time you learn it.</div>`;
 
   function addVerseSheet() {
     openSheet(`
@@ -384,11 +393,13 @@
 
   function trPicker() {
     const ex = id => E.verse(id, 'BSB');
+    const about = { BSB: 'modern English', KJV: 'classic', ASV: '1901 · uses “Jehovah”' };
     return `<h3 style="margin-left:2px">Choose your translation</h3>
-      <div class="tr-pick">${['BSB', 'KJV'].map(t => `
+      <div class="tr-pick">${Object.keys(E.TRANSLATIONS).map(t => `
         <button class="card glass tr-opt ${E.state.settings.tr === t ? 'on' : ''}" data-action="pick-tr" data-tr="${t}">
-          <b>${t}</b> <span class="muted small">${E.TRANSLATIONS[t]}${t === 'BSB' ? ' · modern English' : ' · classic'}</span>
-          <div class="tr-sample">${esc(E.verse('jhn3-16', t).text)}</div>
+          <b>${t}</b> <span class="muted small">${E.TRANSLATIONS[t]}${about[t] ? ' · ' + about[t] : ''}</span>
+          <div class="tr-sample">${E.BUILTIN.includes(t) ? esc(E.verse('jhn3-16', t).text)
+            : (E.state.texts[`${t}:jhn3-16`] ? esc(E.state.texts[`${t}:jhn3-16`]) : `Copyrighted, so not built in. The first time you learn a verse, paste it from your Bible app${t === 'ESV' ? ' (or fill it in automatically with a free ESV API key)' : ''}. It stays on this device.`)}</div>
         </button>`).join('')}</div>
       <p class="muted small" style="margin:0 4px 16px">You can switch any time. Verses you’ve started keep their wording.</p>`;
   }
@@ -426,13 +437,72 @@
       <button class="btn primary block" data-action="welcome-done">Got it</button>`);
   }
 
+  // ---------- your own copies of NIV / ESV / NASB ----------
+  let textResolve = null;
+  function cleanPasted(t, ref) {
+    const refRe = new RegExp(ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s*\\(?[A-Z]{2,5}\\)?)?', 'g');
+    return t.replace(/\[[^\]]*\]/g, ' ')          // footnote markers [a]
+      .replace(/\([A-Z]{1,2}\)/g, ' ')               // cross-reference letters (A)
+      .replace(refRe, ' ')                           // "Romans 3:23 NIV"
+      .replace(/(^|\s)\d{1,3}(?=\s)/g, ' ')          // verse numbers
+      .replace(/\s+/g, ' ').trim();
+  }
+  async function fetchESV(ref) {
+    const q = new URLSearchParams({ q: ref, 'include-passage-references': false, 'include-verse-numbers': false, 'include-first-verse-numbers': false,
+      'include-footnotes': false, 'include-headings': false, 'include-short-copyright': false, 'include-selahs': false });
+    const r = await fetch('https://api.esv.org/v3/passage/text/?' + q, { headers: { Authorization: 'Token ' + E.state.settings.esvKey.trim() } });
+    if (!r.ok) throw new Error('ESV API ' + r.status);
+    const j = await r.json();
+    return (j.passages || []).join(' ').replace(/\s+/g, ' ').trim();
+  }
+  // Ask for a verse's wording in a pasted translation. Resolves true once there's text to learn.
+  function requestText(id, tr, prefill = '') {
+    return new Promise(res => {
+      if (textResolve) textResolve(false);
+      textResolve = res;
+      const v = E.verse(id, tr);
+      const link = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(v.ref)}&version=${tr}`;
+      const auto = tr === 'ESV' && E.state.settings.esvKey;
+      openSheet(`
+        <div class="eyebrow">${tr} · ${E.TRANSLATIONS[tr]}</div>
+        <h1 style="font-family:var(--serif);font-size:30px">${esc(v.title ? `${v.title} · ${v.ref}` : v.ref)}</h1>
+        <p class="muted">Copy ${v.chain ? 'the whole passage' : 'this verse'} from your Bible app (or the link below) and paste it here. It’s saved only on this device. You only do this once per verse.</p>
+        <a class="btn ghost block" href="${link}" target="_blank" rel="noopener">Open ${esc(v.ref)} on Bible Gateway ↗</a>
+        ${tr === 'ESV' && !auto ? '<p class="muted small" style="margin:10px 4px 0">Tip: add a free ESV API key in Progress → Settings and ESV verses fill in automatically.</p>' : ''}
+        <label class="field" style="margin-top:14px"><span>${tr} wording</span><textarea id="paste-text" placeholder="Paste ${esc(v.ref)} here…" maxlength="2500">${esc(prefill)}</textarea></label>
+        <div class="muted small" id="paste-status" style="margin:-6px 4px 12px">${auto && !prefill ? 'Fetching from the ESV API…' : 'Verse numbers and footnote letters are removed automatically.'}</div>
+        <div class="actions">
+          <button class="btn primary" data-action="save-text" data-id="${esc(id)}" data-tr="${tr}">Save</button>
+          ${prefill ? '' : `<button class="btn ghost" data-action="text-builtin" data-id="${esc(id)}">Learn it in the BSB instead</button>`}
+        </div>`);
+      if (auto && !prefill) {
+        fetchESV(v.ref).then(t => {
+          if (!t || !$('#paste-text')) return;
+          $('#paste-text').value = t;
+          $('#paste-status').textContent = '✓ Filled in from the ESV API. Check it and tap Save.';
+        }).catch(() => { if ($('#paste-status')) $('#paste-status').textContent = 'Couldn’t reach the ESV API (check your key). Paste it instead.'; });
+      }
+    });
+  }
+  function finishText(ok) { const r = textResolve; textResolve = null; closeSheet(); if (r) r(ok); }
+
+  // Make sure every verse in a session has wording before it starts.
+  async function ensureTexts(items) {
+    for (const id of [...new Set(items.map(i => i.id))]) {
+      const v = E.verse(id);
+      if (v && !v.text && !(await requestText(id, v.tr))) return false;
+    }
+    return true;
+  }
+
   // ---------- session ----------
   let S = null;   // session
   let X = null;   // current exercise
   const KEYS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 
-  function startSession(items) {
+  async function startSession(items) {
     if (!items || !items.length) { toast('You’re all caught up ✨'); return; }
+    if (!(await ensureTexts(items))) return;
     closeSheet();
     const lvl = E.levelOf(E.state.xp);
     S = { items, i: 0, xp: 0, words: 0, first: 0, combo: 0, best: 0, memorized: [], badges: [], startLevel: lvl, retries: {} };
@@ -965,7 +1035,7 @@
     const v = E.verse(id), c = E.card(id);
     if (!v) return;
     const p = { n: E.state.settings.name || '', tr: v.tr };
-    if (v.pack === 'custom') { p.r = v.ref; p.t = v.text; } else p.id = id;
+    if (v.pack === 'custom') { p.r = v.ref; p.t = v.text; } else { p.id = id; if (!E.BUILTIN.includes(v.tr)) p.t = v.text; }
     if (c && c.best) { p.a = c.bestAcc; p.s = c.best; }
     const text = p.a ? `I can recite ${v.ref} from memory, ${p.a}% in ${p.s}s. Can you beat me? 🤝`
       : `Let’s memorize ${v.ref} together 🌱`;
@@ -975,9 +1045,11 @@
   let pending = null;
   function challengeSheet(p) {
     let id = p.id && E.verses[p.id] ? p.id : null;
+    if (id && p.t && !E.BUILTIN.includes(p.tr) && E.TRANSLATIONS[p.tr] && !E.state.texts[`${p.tr}:${id}`]) E.setText(id, p.tr, p.t);
     if (!id && p.r && p.t) id = (E.state.custom.find(v => v.ref === p.r && v.text === p.t) || {}).id || null;
     if (!id && !(p.r && p.t)) return;
     const v = id ? E.verse(id, E.card(id) ? undefined : (E.TRANSLATIONS[p.tr] ? p.tr : undefined)) : { ref: p.r, text: p.t, tr: p.tr || 'Custom' };
+    if (!v.text) v.text = shown(v);
     pending = { p, id };
     openSheet(`
       <div style="text-align:center;font-size:50px;margin-top:6px">🤝</div>
@@ -1062,7 +1134,7 @@
   }
 
   // ---------- events ----------
-  document.addEventListener('click', e => {
+  document.addEventListener('click', async e => {
     const tabBtn = e.target.closest('[data-tab]');
     if (tabBtn) { Fx.sound('tap'); return show(tabBtn.dataset.tab); }
     const go = e.target.closest('[data-tab-go]');
@@ -1097,15 +1169,45 @@
         $$('.tr-opt').forEach(b => b.classList.toggle('on', b === a));
         return render();
       case 'preview-tr': {
-        const t = $('#sheet-vtext'), showing = a.dataset.tr;
-        t.textContent = E.verse(id, showing).text;
-        a.dataset.tr = Object.keys(E.TRANSLATIONS).find(x => x !== showing);
-        a.textContent = `Show ${a.dataset.tr}`;
+        const tr = a.dataset.tr, v = E.verse(id, tr), cur = E.verse(id).tr, c = E.card(id);
+        $$('.tr-chips .chip').forEach(b => b.classList.toggle('on', b === a));
+        $('#sheet-vtext').innerHTML = v.text ? esc(v.text) : `<span class="muted">Not added yet.</span>`;
+        $('#sheet-switch').innerHTML = tr === cur ? '' : c
+          ? `<button class="btn ghost sm block" data-action="switch-tr" data-id="${esc(id)}" data-tr="${tr}" style="margin-bottom:12px">Restart this verse in the ${tr}</button>`
+          : `<button class="btn ghost sm block" data-action="use-tr" data-id="${esc(id)}" data-tr="${tr}" style="margin-bottom:12px">Learn this verse in the ${tr}</button>`;
         return;
       }
-      case 'switch-tr':
-        if (confirm(`Restart ${E.verse(id).ref} in the ${E.TRANSLATIONS[a.dataset.tr]}? Progress on this verse resets.`)) { E.switchTranslation(id, a.dataset.tr); verseSheet(id); render(); }
+      case 'use-tr': case 'switch-tr': {
+        const tr = a.dataset.tr;
+        if (a.dataset.action === 'switch-tr' && !confirm(`Restart ${E.verse(id).ref} in the ${E.TRANSLATIONS[tr]}? Progress on this verse resets.`)) return;
+        if (!E.verse(id, tr).text) await requestText(id, tr);
+        if (!E.verse(id, tr).text) return verseSheet(id);
+        E.switchTranslation(id, tr); verseSheet(id); render();
+        return toast(`Now in the ${tr}`);
+      }
+      case 'edit-text': {
+        const tr = a.dataset.tr;
+        if (await requestText(id, tr, E.verse(id, tr).text)) { verseSheet(id); render(); }
+        else verseSheet(id);
         return;
+      }
+      case 'save-text': {
+        const tr = a.dataset.tr, v = E.verse(id, tr);
+        const t = cleanPasted($('#paste-text').value, v.ref);
+        if (E.tokenize(t).filter(w => w.key).length < 2) return toast('Paste the verse text first');
+        const c = E.card(id);
+        // Editing wording you've already learned: keep the schedule, but mention it.
+        if (c && c.state === 'review' && c.tr === tr && E.state.texts[`${tr}:${id}`] && E.state.texts[`${tr}:${id}`] !== t) toast('Wording updated ✓');
+        E.setText(id, tr, t);
+        return finishText(true);
+      }
+      case 'text-builtin': {
+        const c = E.card(id);
+        if (c && c.state === 'learning') c.tr = 'BSB';
+        else if (!c) E.ensureCard(id).tr = 'BSB';
+        E.save();
+        return finishText(true);
+      }
       case 'read-next': return readNext();
       case 'listen': return listen();
       case 'add-verse': return addVerseSheet();

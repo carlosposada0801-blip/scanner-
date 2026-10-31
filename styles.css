@@ -469,3 +469,10 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: v
 @keyframes livePulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, #ff5f7e 25%, transparent); } }
 
 .heat i.rest { background: color-mix(in srgb, var(--ok) 14%, transparent); }
+
+/* translation chips on the verse page */
+.tr-chips { margin: 10px 0 0; gap: 6px; }
+.tr-chips .chip { cursor: pointer; transition: background .2s, color .2s; }
+.tr-chips .chip.on { background: linear-gradient(135deg, #4f74ff, #8b5cf6); color: #fff; border-color: transparent; }
+
+a.btn { text-decoration: none; color: inherit; text-align: center; }
