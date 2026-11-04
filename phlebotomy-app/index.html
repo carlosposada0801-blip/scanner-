@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b3133b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Phleb Practice">
+<title>Phlebotomy Practice</title>
+<style>
+  :root{
+    --bg:#f6f4f2; --card:#fff; --ink:#1d1d1f; --muted:#6b6b70; --line:#e6e2de;
+    --brand:#b3133b; --brand2:#e2486a; --ok:#1d8a4a; --bad:#c62828; --warn:#b26a00;
+    --radius:16px; --shadow:0 2px 10px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#141416; --card:#1f1f23; --ink:#f2f2f4; --muted:#a0a0a8; --line:#2e2e34; --shadow:none; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;
+    padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;display:flex;align-items:center;gap:10px}
+  header h1{font-size:18px;margin:0;flex:1}
+  header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:6px 10px;font-size:15px}
+  main{padding:16px 14px calc(90px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+  nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);
+    display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
+  nav button{flex:1;background:none;border:0;color:var(--muted);padding:9px 0 8px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+  nav button .i{font-size:21px;line-height:1}
+  nav button.on{color:var(--brand);font-weight:600}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 12px;text-align:left;
+    color:var(--ink);font-size:15px;font-weight:600;box-shadow:var(--shadow);min-height:96px;display:flex;flex-direction:column;gap:6px}
+  .tile .e{font-size:26px}
+  .tile small{font-weight:400;color:var(--muted);font-size:12.5px}
+  h2{font-size:21px;margin:4px 0 12px}
+  h3{font-size:17px;margin:16px 0 8px}
+  p{margin:6px 0}
+  ul,ol{padding-left:22px;margin:6px 0}
+  li{margin:4px 0}
+  .muted{color:var(--muted)}
+  .small{font-size:13.5px}
+  .btn{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:16px;font-weight:600}
+  .btn.alt{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+  .btn.full{width:100%}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .back{background:none;border:0;color:var(--brand);font-size:16px;padding:0 0 10px;font-weight:600}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--line);font-size:12.5px;margin:2px 4px 2px 0}
+  .tip{border-left:4px solid var(--brand);background:rgba(179,19,59,.07);padding:10px 12px;border-radius:8px;margin:10px 0}
+  .warn{border-left:4px solid var(--warn);background:rgba(178,106,0,.09);padding:10px 12px;border-radius:8px;margin:10px 0}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:13px;color:var(--muted);font-weight:600}
+
+  /* tubes */
+  .tube{width:26px;height:64px;position:relative;flex:0 0 auto}
+  .tube .cap{position:absolute;top:0;left:-2px;right:-2px;height:18px;border-radius:5px 5px 3px 3px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+  .tube .body{position:absolute;top:16px;left:3px;right:3px;bottom:0;border-radius:0 0 12px 12px;
+    background:linear-gradient(90deg,rgba(255,255,255,.75),rgba(230,230,235,.5));border:1px solid rgba(0,0,0,.15)}
+  .tube .blood{position:absolute;left:4px;right:4px;bottom:1px;height:55%;border-radius:0 0 11px 11px;background:#8b0d1e;opacity:.85}
+  .tube.big{width:40px;height:96px}
+  .tube.big .cap{height:26px}.tube.big .body{top:24px}
+  .tubeRow{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .tubeRow:last-child{border-bottom:0}
+  .tubeRow .n{font-size:22px;font-weight:800;color:var(--brand);width:26px;text-align:center}
+  .tubeRow b{display:block}
+
+  /* quiz */
+  .opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);
+    border-radius:12px;padding:13px 14px;margin:8px 0;font-size:16px}
+  .opt.right{border-color:var(--ok);background:rgba(29,138,74,.12)}
+  .opt.wrong{border-color:var(--bad);background:rgba(198,40,40,.10)}
+  .opt:disabled{opacity:1}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+  .bar i{display:block;height:100%;background:var(--brand);border-radius:99px;transition:width .3s}
+  .feedback{padding:12px;border-radius:12px;margin-top:6px;font-size:15px}
+  .feedback.ok{background:rgba(29,138,74,.12)}
+  .feedback.no{background:rgba(198,40,40,.10)}
+
+  /* flashcards */
+  .flash{perspective:1000px;height:300px;margin:8px 0 14px}
+  .flash .in{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+  .flash.flip .in{transform:rotateY(180deg)}
+  .flash .f,.flash .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--radius);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;
+    background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:19px;overflow:auto}
+  .flash .b{transform:rotateY(180deg);font-size:17px;background:linear-gradient(160deg,var(--card),rgba(179,19,59,.08))}
+  .flash .lbl{position:absolute;top:12px;left:14px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  /* order game */
+  .bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:120px;padding:8px 0}
+  .tbtn{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 4px 6px;width:78px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);font-size:12px;font-weight:600}
+  .tbtn.used{opacity:.25;pointer-events:none}
+  .tbtn.shake{animation:shake .35s;border-color:var(--bad)}
+  @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+  .slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px;border:2px dashed var(--line);border-radius:14px}
+  .slot{width:40px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--muted);text-align:center;line-height:1.1}
+  .slot .tube{transform:scale(.75);margin:-8px 0}
+  .ph{width:20px;height:48px;border:2px dashed var(--line);border-radius:4px 4px 10px 10px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}
+  .stepbtn{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:11px 12px;margin:7px 0;font-size:15px}
+  .stepbtn.done{border-color:var(--ok);background:rgba(29,138,74,.1)}
+  .stepbtn.shake{animation:shake .35s;border-color:var(--bad)}
+  .stat{font-size:28px;font-weight:800;color:var(--brand)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .chip{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font-size:14px}
+  .chip.on{border-color:var(--brand);background:var(--brand);color:#fff}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0}
+  summary{font-weight:600;cursor:pointer}
+  .verse{font-style:italic;color:var(--muted);font-size:14px;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">🩸 Phlebotomy Practice</h1>
+</header>
+<main id="app"></main>
+<nav id="nav">
+  <button data-tab="home"><span class="i">🏠</span>Home</button>
+  <button data-tab="learn"><span class="i">📖</span>Learn</button>
+  <button data-tab="practice"><span class="i">🎯</span>Practice</button>
+  <button data-tab="progress"><span class="i">📊</span>Progress</button>
+</nav>
+
+<script>
+/* =========================================================
+   DATA
+   ========================================================= */
+const TUBES = {
+  culture:   {name:"Blood Culture (bottles / yellow SPS)", short:"Culture", cap:"linear-gradient(90deg,#f7e04b 50%,#6b4ea0 50%)",
+              additive:"Broth (bottles) or SPS – sodium polyanethol sulfonate (yellow tube)", spec:"Whole blood", inv:"8–10",
+              tests:["Blood cultures (sepsis, bacteremia)"], dept:"Microbiology", rank:1,
+              notes:"Drawn FIRST to keep it sterile. Site cleaned with chlorhexidine (or per policy) and bottle tops wiped. With a butterfly, fill the AEROBIC bottle first (the air in the tubing goes into it). With a syringe, fill the ANAEROBIC bottle first. Follow your facility policy."},
+  lightblue: {name:"Light Blue", short:"Lt Blue", cap:"#7ec8e3", additive:"Sodium citrate (3.2%) – binds calcium", spec:"Plasma", inv:"3–4",
+              tests:["PT/INR","PTT / aPTT","D-dimer","Fibrinogen"], dept:"Coagulation", rank:2,
+              notes:"Must be FILLED completely – 9:1 blood-to-additive ratio. Underfilled = rejected. If it's the first tube with a butterfly, draw a discard tube first."},
+  red:       {name:"Red (plastic)", short:"Red", cap:"#c62828", additive:"Clot activator (plastic) / none (glass)", spec:"Serum", inv:"5 (plastic) / 0 (glass)",
+              tests:["Chemistry","Serology","Drug levels","Blood bank (some facilities)"], dept:"Chemistry / Serology / Blood bank", rank:3,
+              notes:"Let clot 30–60 minutes before centrifuging."},
+  sst:       {name:"Gold / Red-Gray \"Tiger\" (SST)", short:"Gold SST", cap:"#f2b705", additive:"Clot activator + separator gel", spec:"Serum", inv:"5",
+              tests:["CMP / BMP","Lipid panel","Liver panel","Thyroid (TSH)","Hormones"], dept:"Chemistry", rank:3,
+              notes:"SST = Serum Separator Tube. Clot 30 min before spinning. Not for blood bank or some drug levels."},
+  pst:       {name:"Light Green / Green-Gray (PST)", short:"Lt Green PST", cap:"#8fd18f", additive:"Lithium heparin + separator gel", spec:"Plasma", inv:"8–10",
+              tests:["STAT chemistry","Electrolytes","Potassium"], dept:"Chemistry", rank:4,
+              notes:"PST = Plasma Separator Tube. Heparin is an anticoagulant (inhibits thrombin)."},
+  green:     {name:"Dark Green", short:"Green", cap:"#1b7f3b", additive:"Sodium or lithium heparin", spec:"Plasma / whole blood", inv:"8–10",
+              tests:["Ammonia (on ice)","STAT chemistry","Chromosome studies (sodium heparin)"], dept:"Chemistry", rank:4,
+              notes:"Do NOT use a lithium heparin tube for a lithium level, or sodium heparin for sodium."},
+  lavender:  {name:"Lavender / Purple", short:"Lavender", cap:"#9b6fd1", additive:"EDTA (K2 or K3) – binds calcium", spec:"Whole blood", inv:"8–10",
+              tests:["CBC","Hemoglobin A1c","ESR (sed rate)","Retic count","Blood smear"], dept:"Hematology", rank:5,
+              notes:"EDTA preserves cell shape — that's why it's the hematology tube. EDTA carryover into other tubes raises potassium and lowers calcium, so it comes late."},
+  pink:      {name:"Pink", short:"Pink", cap:"#f48fb1", additive:"K2 EDTA", spec:"Whole blood", inv:"8–10",
+              tests:["Type & screen","Crossmatch","ABO/Rh"], dept:"Blood Bank", rank:5,
+              notes:"Blood bank tubes need a special armband/label with patient's full info per facility policy."},
+  royal:     {name:"Royal Blue", short:"Royal Blue", cap:"#1a3fa8", additive:"None, EDTA, or heparin (check label color)", spec:"Serum or whole blood", inv:"8–10 (additive)",
+              tests:["Trace elements (zinc, copper)","Heavy metals","Toxicology"], dept:"Chemistry / Toxicology", rank:5,
+              notes:"Made to be trace-element free. Label stripe tells the additive (red = none, lavender = EDTA, green = heparin)."},
+  tan:       {name:"Tan", short:"Tan", cap:"#c9a46b", additive:"K2 EDTA (lead-free)", spec:"Whole blood", inv:"8–10",
+              tests:["Blood lead level"], dept:"Chemistry / Toxicology", rank:5, notes:"Certified lead-free tube."},
+  gray:      {name:"Gray", short:"Gray", cap:"#8a8f98", additive:"Sodium fluoride (stops glycolysis) + potassium oxalate (anticoagulant)", spec:"Plasma", inv:"8–10",
+              tests:["Glucose (fasting, GTT)","Lactic acid / lactate (on ice)","Blood alcohol"], dept:"Chemistry", rank:6,
+              notes:"Fluoride is an ANTIGLYCOLYTIC — it keeps cells from eating the glucose. Drawn LAST."}
+};
+const BASIC_ORDER = ["culture","lightblue","red","sst","green","lavender","gray"];
+const FULL_ORDER  = ["culture","lightblue","red","sst","pst","green","lavender","pink","royal","tan","gray"];
+
+const QUESTIONS = [
+ // Order of draw
+ {c:"Order of Draw",q:"Which tube/bottle is drawn FIRST in the venipuncture order of draw?",a:["Blood culture","Light blue","Red","Lavender"],e:"Blood cultures are first to keep the sample sterile and free of additive contamination."},
+ {c:"Order of Draw",q:"Which tube is drawn LAST in the order of draw?",a:["Gray","Lavender","Green","Light blue"],e:"Gray (sodium fluoride / potassium oxalate) is last. Mnemonic: '...Green Light Go' – Gray goes last."},
+ {c:"Order of Draw",q:"What is the correct order: culture, ___, red/gold, green, lavender, gray?",a:["Light blue","Pink","Royal blue","Tan"],e:"Light blue (citrate) comes right after cultures."},
+ {c:"Order of Draw",q:"Why is the lavender (EDTA) tube drawn after the green and red tubes?",a:["EDTA carryover can falsely raise potassium and lower calcium","EDTA clots the blood","Lavender tubes are smaller","It is easier to label"],e:"K2/K3 EDTA contains potassium and binds calcium. Carryover into chemistry tubes gives falsely high K+ and low Ca²⁺."},
+ {c:"Order of Draw",q:"Which mnemonic helps you remember the order of draw?",a:["Stop Light Red Stay Put, Green Light Go","ABC — Airway, Breathing, Circulation","RICE","FAST"],e:"Stop (sterile/cultures) Light (light blue) Red (red) Stay (SST) Put (PST) Green (green) Light (lavender) Go (gray)."},
+ {c:"Order of Draw",q:"Which tube is drawn right before the gray tube?",a:["Lavender","Light blue","Red","Gold SST"],e:"Lavender (EDTA) → Gray is the end of the order."},
+ {c:"Order of Draw",q:"Which organization sets the standard order of draw?",a:["CLSI","FDA","CDC","OSHA"],e:"CLSI (Clinical and Laboratory Standards Institute) publishes the order of draw (GP41)."},
+ {c:"Order of Draw",q:"A patient needs a CBC, PT, and CMP. In what order do you draw?",a:["Light blue, Gold SST, Lavender","Lavender, Light blue, Gold SST","Gold SST, Lavender, Light blue","Light blue, Lavender, Gold SST"],e:"PT = light blue, CMP = gold/SST, CBC = lavender → light blue, gold, lavender."},
+ {c:"Order of Draw",q:"Order for a glucose (gray), PTT (light blue), and potassium (green)?",a:["Light blue, Green, Gray","Gray, Green, Light blue","Green, Light blue, Gray","Light blue, Gray, Green"],e:"Light blue → Green → Gray."},
+ {c:"Order of Draw",q:"In the CAPILLARY (skin puncture) order of draw, which comes first?",a:["EDTA (lavender)","Serum (red)","Heparin (green)","Gray"],e:"Capillary order is different: blood gases, then EDTA, then other additive tubes, then serum last. EDTA first because platelets clump quickly at the site."},
+ // Tubes / additives
+ {c:"Tubes & Additives",q:"What additive is in the light blue tube?",a:["Sodium citrate","EDTA","Sodium heparin","Sodium fluoride"],e:"Light blue = 3.2% sodium citrate, which binds calcium for coagulation testing."},
+ {c:"Tubes & Additives",q:"What additive is in the lavender tube?",a:["EDTA","Sodium citrate","Lithium heparin","Potassium oxalate"],e:"Lavender = EDTA. It preserves cell shape for hematology."},
+ {c:"Tubes & Additives",q:"What is the purpose of sodium fluoride in the gray tube?",a:["Antiglycolytic – preserves glucose","Activates clotting","Separates serum","Binds iron"],e:"Sodium fluoride stops cells from using up glucose (glycolysis)."},
+ {c:"Tubes & Additives",q:"Heparin prevents clotting by:",a:["Inhibiting thrombin","Binding calcium","Removing fibrinogen","Activating platelets"],e:"Heparin is an antithrombin. EDTA, citrate and oxalate all work by binding calcium."},
+ {c:"Tubes & Additives",q:"Which anticoagulants work by binding calcium?",a:["EDTA, sodium citrate, and potassium oxalate","Heparin only","Sodium fluoride only","Clot activator and gel"],e:"EDTA, citrate, oxalate = calcium binders. Heparin = inhibits thrombin."},
+ {c:"Tubes & Additives",q:"The ratio of blood to additive in a light blue tube must be:",a:["9:1","1:1","4:1","1:9"],e:"9 parts blood to 1 part citrate. Underfilled tubes give falsely long clotting times and get rejected."},
+ {c:"Tubes & Additives",q:"What does SST stand for?",a:["Serum Separator Tube","Sodium Saline Tube","Special Specimen Tube","Sterile Serum Tube"],e:"SST = Serum Separator Tube (gold or red/gray tiger top)."},
+ {c:"Tubes & Additives",q:"What is in a PST (light green) tube?",a:["Lithium heparin and gel","EDTA and gel","Clot activator and gel","Sodium citrate"],e:"PST = Plasma Separator Tube: lithium heparin + separator gel."},
+ {c:"Tubes & Additives",q:"Serum is obtained from a tube that:",a:["Is allowed to clot","Contains an anticoagulant","Contains EDTA","Is never centrifuged"],e:"Serum = clotted blood spun down (no fibrinogen). Plasma = anticoagulated blood spun down (contains fibrinogen)."},
+ {c:"Tubes & Additives",q:"How long should an SST/red tube clot before centrifuging?",a:["30 minutes","2 minutes","2 hours","Spin immediately"],e:"About 30 minutes (up to 60) at room temp so it fully clots."},
+ {c:"Tubes & Additives",q:"How many times do you invert a light blue tube?",a:["3–4","8–10","0","20"],e:"Light blue: 3–4 gentle inversions. Never shake – that causes hemolysis."},
+ {c:"Tubes & Additives",q:"How many times do you invert a lavender tube?",a:["8–10","3–4","5","0"],e:"EDTA tubes: 8–10 gentle inversions."},
+ {c:"Tubes & Additives",q:"How many times do you invert a gold SST tube?",a:["5","8–10","3–4","0"],e:"SST and plastic red (clot activator): 5 inversions."},
+ {c:"Tubes & Additives",q:"Why do you never shake a tube?",a:["It causes hemolysis","It makes it clot faster","It cools the sample","It removes the vacuum"],e:"Shaking ruptures red cells (hemolysis). Invert gently."},
+ // Tests
+ {c:"Tests → Tubes",q:"A CBC is drawn in which tube?",a:["Lavender","Light blue","Gold SST","Gray"],e:"CBC = lavender (EDTA)."},
+ {c:"Tests → Tubes",q:"PT/INR is drawn in which tube?",a:["Light blue","Lavender","Green","Gray"],e:"Coag tests (PT/INR, PTT, D-dimer, fibrinogen) = light blue."},
+ {c:"Tests → Tubes",q:"A fasting glucose or glucose tolerance test is usually drawn in:",a:["Gray","Lavender","Light blue","Pink"],e:"Gray (sodium fluoride) preserves glucose."},
+ {c:"Tests → Tubes",q:"Hemoglobin A1c is drawn in:",a:["Lavender","Gray","Gold SST","Light blue"],e:"HbA1c is measured on whole blood in an EDTA (lavender) tube."},
+ {c:"Tests → Tubes",q:"A type and crossmatch is usually drawn in:",a:["Pink","Gray","Light blue","Light green"],e:"Pink (K2 EDTA) is the blood bank tube. Some facilities use lavender or red – follow policy."},
+ {c:"Tests → Tubes",q:"A blood lead level is drawn in which tube?",a:["Tan","Gray","Light blue","Gold"],e:"Tan = lead-free K2 EDTA. Royal blue is also used for some metals."},
+ {c:"Tests → Tubes",q:"A lipid panel or CMP is commonly drawn in:",a:["Gold SST","Lavender","Light blue","Gray"],e:"Chemistry panels = gold SST (or light green PST at many hospitals)."},
+ {c:"Tests → Tubes",q:"An ESR (sed rate) uses which tube?",a:["Lavender","Gray","Red","Gold"],e:"ESR = lavender (EDTA) in most labs."},
+ {c:"Tests → Tubes",q:"A D-dimer goes in which tube?",a:["Light blue","Lavender","Royal blue","Pink"],e:"D-dimer is a coagulation test → light blue."},
+ {c:"Tests → Tubes",q:"Trace elements like zinc and copper are drawn in:",a:["Royal blue","Lavender","Light blue","Light green"],e:"Royal blue tubes are trace-element free."},
+ {c:"Tests → Tubes",q:"A lithium level should NOT be drawn in which tube?",a:["Lithium heparin (green)","Gold SST","Red","It can be drawn in any"],e:"Lithium heparin would falsely raise the lithium result."},
+ // Butterfly / needles
+ {c:"Butterfly & Needles",q:"A larger gauge number means the needle is:",a:["Smaller (thinner)","Larger (wider)","Longer","Shorter"],e:"Gauge is backwards: 25g is thinner than 21g."},
+ {c:"Butterfly & Needles",q:"Most common needle gauge for a routine adult venipuncture:",a:["21 gauge","16 gauge","25 gauge","27 gauge"],e:"21g is standard (22g is also common). 16g is for blood donation."},
+ {c:"Butterfly & Needles",q:"Most common butterfly gauge?",a:["23 gauge","18 gauge","16 gauge","30 gauge"],e:"23g butterfly is the go-to. Range for phlebotomy is about 21–25g."},
+ {c:"Butterfly & Needles",q:"When is a butterfly (winged infusion set) a good choice?",a:["Small, fragile, or hand veins; children; elderly patients","Every routine draw","Only for blood donation","Only arterial draws"],e:"Butterflies give more control on small, fragile, or hard-to-reach veins."},
+ {c:"Butterfly & Needles",q:"Insertion angle for a butterfly needle:",a:["10–15 degrees","30–45 degrees","45–90 degrees","5 degrees"],e:"Butterfly: shallow angle, about 10–15°. Standard ETS needle: 15–30°."},
+ {c:"Butterfly & Needles",q:"Insertion angle for a standard (ETS) needle:",a:["15–30 degrees","45 degrees","90 degrees","5 degrees"],e:"15–30°, bevel up."},
+ {c:"Butterfly & Needles",q:"Needle bevel should face:",a:["Up","Down","Sideways","Doesn't matter"],e:"Bevel UP for a smooth entry with less pain."},
+ {c:"Butterfly & Needles",q:"If you use a butterfly and the FIRST tube is a light blue, you should:",a:["Draw a discard tube first","Draw the light blue anyway","Skip the light blue","Draw lavender first"],e:"The butterfly tubing holds air (~0.5 mL dead space). A discard tube (non-additive or another light blue) fills the tubing so the light blue gets the correct 9:1 ratio."},
+ {c:"Butterfly & Needles",q:"Why can drawing a large tube with a small butterfly (25g) cause problems?",a:["The strong vacuum through a tiny needle can hemolyze cells or collapse the vein","It clots faster","It's too slow to matter","It contaminates the sample"],e:"Use smaller-volume tubes with small-gauge needles to prevent hemolysis and vein collapse."},
+ {c:"Butterfly & Needles",q:"What is the main safety risk of butterfly needles?",a:["Higher needlestick risk – the needle can bounce/recoil","They break easily","They can't hold tubes","They need larger tubes"],e:"Butterflies have a high needlestick rate. Activate the safety device right away and keep control of the tubing."},
+ {c:"Butterfly & Needles",q:"ETS stands for:",a:["Evacuated Tube System","Emergency Transfer System","External Tube Syringe","Extra Tube Set"],e:"ETS = Evacuated Tube System (needle, holder, vacuum tubes)."},
+ {c:"Butterfly & Needles",q:"When should the needle safety device be activated?",a:["Immediately after removing the needle from the arm","After labeling","At the end of the shift","Before the draw"],e:"Activate it right away, then put it in the sharps container. Never recap by hand."},
+ {c:"Butterfly & Needles",q:"A syringe draw is helpful when:",a:["Veins are small/fragile and may collapse under tube vacuum","The patient has great veins","You need blood cultures only","You want to draw faster"],e:"With a syringe you control the pull. Transfer to tubes with a transfer device in the order of draw."},
+ // Site / procedure
+ {c:"Procedure & Site",q:"First-choice vein for venipuncture:",a:["Median cubital","Basilic","Cephalic","Femoral"],e:"Median cubital: large, well-anchored, less painful, and away from nerves and arteries."},
+ {c:"Procedure & Site",q:"Which antecubital vein is the LAST choice and why?",a:["Basilic – near the brachial artery and median nerve","Cephalic – too big","Median cubital – rolls","None, they're equal"],e:"Basilic (inner arm) is close to the brachial artery and median nerve."},
+ {c:"Procedure & Site",q:"How far above the site is the tourniquet placed?",a:["3–4 inches","1 inch","8–10 inches","On the wrist"],e:"3–4 inches (7.5–10 cm) above the puncture site."},
+ {c:"Procedure & Site",q:"Maximum time a tourniquet should stay on:",a:["1 minute","3 minutes","5 minutes","10 minutes"],e:"Over 1 minute causes hemoconcentration and can change results."},
+ {c:"Procedure & Site",q:"How many patient identifiers are required?",a:["At least 2","1","3 always","None if the patient is known"],e:"At least two identifiers (like full name + date of birth / MRN). Never use the room number."},
+ {c:"Procedure & Site",q:"Routine venipuncture site is cleaned with:",a:["70% isopropyl alcohol","Betadine only","Soap and water","Hydrogen peroxide"],e:"70% isopropyl alcohol, then let it air dry ~30 sec. Wet alcohol stings and can hemolyze the sample."},
+ {c:"Procedure & Site",q:"Which test should NOT be cleaned with alcohol?",a:["Blood alcohol (ethanol) level","CBC","Glucose","PT"],e:"Use a non-alcohol cleaner (like soap and water or benzalkonium chloride) for blood alcohol."},
+ {c:"Procedure & Site",q:"When should tubes be labeled?",a:["At the bedside, right after the draw, in front of the patient","Before the draw at the nurses' station","Back in the lab","Whenever convenient"],e:"Label at the bedside after the draw. Pre-labeling leads to mislabeled specimens."},
+ {c:"Procedure & Site",q:"What info goes on the tube label?",a:["Patient name, DOB/ID, date, time, and your initials","Only the patient's name","Room number and test","Doctor's name only"],e:"Name, ID number/DOB, date, time of collection, collector's initials (plus anything your facility requires)."},
+ {c:"Procedure & Site",q:"When do you release the tourniquet?",a:["As blood begins to flow / before removing the needle","After removing the needle","After applying the bandage","Never"],e:"Always release before pulling the needle out, or you'll cause a hematoma."},
+ {c:"Procedure & Site",q:"Which arm should you avoid?",a:["The side of a mastectomy","The dominant arm","The arm with a watch","The left arm always"],e:"Avoid the mastectomy side (lymphedema risk), arms with IVs, fistulas/grafts, hematomas, burns, or heavy scarring."},
+ {c:"Procedure & Site",q:"If a patient has an IV in one arm, you should:",a:["Draw from the other arm if possible","Draw above the IV","Draw from the IV line","Refuse to draw"],e:"Use the other arm. If you must, draw BELOW the IV after the nurse stops it for at least 2 minutes (follow policy)."},
+ {c:"Procedure & Site",q:"A fistula is:",a:["A surgical connection of an artery and vein, often for dialysis – never draw from it","A type of needle","A tube additive","A kind of bandage"],e:"Never apply a tourniquet or draw on the fistula arm."},
+ {c:"Procedure & Site",q:"How long should you hold pressure after the draw (routine)?",a:["Until bleeding stops (about 3–5 minutes)","5 seconds","15 minutes always","No pressure needed"],e:"Apply pressure until bleeding stops. Patients on anticoagulants may need longer. Don't bend the arm up."},
+ // Capillary
+ {c:"Capillary / Heel Stick",q:"Safe area for an infant heel stick:",a:["Medial or lateral plantar surface of the heel","Back of the heel","Arch of the foot","The toes"],e:"Use the outer edges (medial/lateral plantar surface) to avoid the heel bone (calcaneus)."},
+ {c:"Capillary / Heel Stick",q:"Maximum lancet depth for a heel stick:",a:["2.0 mm","5.0 mm","0.5 mm","10 mm"],e:"No deeper than 2.0 mm to avoid hitting bone (osteomyelitis risk)."},
+ {c:"Capillary / Heel Stick",q:"Which fingers are best for a fingerstick?",a:["Middle or ring finger","Thumb","Pinky","Index finger only"],e:"Middle or ring finger, on the fleshy pad, slightly off-center."},
+ {c:"Capillary / Heel Stick",q:"The fingerstick should be made:",a:["Perpendicular (across) the fingerprint lines","Parallel to the fingerprint","On the fingertip","On the side of the nail"],e:"Across the whorls so the drop beads up instead of running down the grooves."},
+ {c:"Capillary / Heel Stick",q:"What do you do with the FIRST drop of blood in a skin puncture?",a:["Wipe it away","Collect it","Save it for glucose","Squeeze it hard"],e:"Wipe away the first drop. It contains tissue fluid and alcohol residue."},
+ {c:"Capillary / Heel Stick",q:"Why shouldn't you squeeze (milk) the finger hard?",a:["Tissue fluid dilutes the sample and causes hemolysis","It hurts less","It stops bleeding","It's faster"],e:"Heavy squeezing gives bad results. Use gentle pressure."},
+ {c:"Capillary / Heel Stick",q:"Warming the heel before a stick increases blood flow up to:",a:["7 times","2 times","20 times","It doesn't help"],e:"A heel warmer (no hotter than 42°C) for 3–5 min can increase flow up to 7×."},
+ // Special handling
+ {c:"Special Handling",q:"Which specimen must be put on ice (chilled)?",a:["Ammonia","CBC","Bilirubin","Cold agglutinins"],e:"Chill: ammonia, lactic acid, blood gases (ABG), and some others like gastrin & PTH (per lab)."},
+ {c:"Special Handling",q:"Which specimen must be protected from light?",a:["Bilirubin","Ammonia","Glucose","PT"],e:"Light-sensitive: bilirubin, vitamin B12, folate, carotene, vitamin A. Wrap in foil or use an amber tube."},
+ {c:"Special Handling",q:"Which specimen must be kept at body temperature (37°C)?",a:["Cold agglutinins","Ammonia","Bilirubin","Lactic acid"],e:"Keep warm: cold agglutinins, cryoglobulins, cryofibrinogen."},
+ {c:"Special Handling",q:"Hemolysis means:",a:["Red blood cells have ruptured","Blood has clotted","The tube is underfilled","The specimen is cold"],e:"Hemolysis = broken RBCs; serum looks pink/red. It falsely raises potassium, LDH, AST."},
+ {c:"Special Handling",q:"Which can cause hemolysis?",a:["Small needle with large tube, shaking tubes, drawing through wet alcohol","Using the median cubital","Labeling at bedside","Using two identifiers"],e:"Also: probing, pulling a syringe plunger too hard, pushing blood through a syringe needle forcefully."},
+ {c:"Special Handling",q:"A 'timed' specimen, like a peak drug level, means:",a:["It must be drawn at a specific time","It's drawn whenever","It must be frozen","It's drawn fasting"],e:"Peak and trough levels are timed around the medication dose. Record the exact time."},
+ {c:"Special Handling",q:"A trough drug level is drawn:",a:["Right before the next dose (lowest level)","Right after the dose","At bedtime","Any time"],e:"Trough = lowest level, just before the next dose. Peak = highest level after the dose."},
+ {c:"Special Handling",q:"Fasting for a fasting glucose or lipid test usually means:",a:["No food for 8–12 hours (water OK)","No water at all","No food for 1 hour","Skip only breakfast"],e:"Usually 8–12 hours, water allowed. Follow the test's specific instructions."},
+ // Complications
+ {c:"Complications",q:"A hematoma is:",a:["Blood leaking into the tissue around the site","A blood clot inside a tube","Fainting","A type of tube"],e:"Causes: needle through the vein, partial insertion, not enough pressure, removing the needle before the tourniquet."},
+ {c:"Complications",q:"If a patient starts to faint during the draw, you should FIRST:",a:["Release the tourniquet and remove the needle","Keep drawing quickly","Give them water","Leave to get help"],e:"Stop the draw (tourniquet off, needle out), apply pressure, lower their head, call for help, and stay with them."},
+ {c:"Complications",q:"Fainting during a blood draw is called:",a:["Syncope","Petechiae","Edema","Hematoma"],e:"Syncope (vasovagal reaction). Never draw from a patient sitting on a stool with no support."},
+ {c:"Complications",q:"Patient complains of sharp, shooting, electric pain during the draw. You should:",a:["Remove the needle immediately","Keep going","Probe to find the vein","Ask them to hold still"],e:"That signals possible nerve contact. Remove the needle at once and document it."},
+ {c:"Complications",q:"Small red spots that appear below the tourniquet are called:",a:["Petechiae","Hematoma","Edema","Syncope"],e:"Petechiae can mean a platelet/clotting problem. The site may bleed longer, so hold pressure longer."},
+ {c:"Complications",q:"Leaving the tourniquet on too long causes:",a:["Hemoconcentration","Hemolysis only","Syncope","Lower protein levels"],e:"Hemoconcentration falsely raises large molecules and cells (proteins, cholesterol, etc.)."},
+ {c:"Complications",q:"Arm swelling from fluid buildup is called:",a:["Edema","Petechiae","Sclerosis","Thrombosis"],e:"Avoid edematous sites; tissue fluid contaminates the sample."},
+ {c:"Complications",q:"If you accidentally hit an artery (bright red, pulsing blood), you should:",a:["Remove the needle and hold firm pressure 5+ minutes","Keep drawing","Bend the arm","Ignore it"],e:"Apply firm pressure for at least 5 minutes and report it per policy."},
+ // Safety
+ {c:"Safety & Infection Control",q:"The single most important way to prevent the spread of infection:",a:["Hand hygiene","Wearing a mask","Using gloves only","Antibiotics"],e:"Hand hygiene before and after every patient and after taking off gloves."},
+ {c:"Safety & Infection Control",q:"Which agency enforces the Bloodborne Pathogens Standard?",a:["OSHA","CLSI","FDA","CAP"],e:"OSHA's Bloodborne Pathogens Standard protects workers from blood exposure."},
+ {c:"Safety & Infection Control",q:"Used needles should be:",a:["Put in a sharps container immediately (never recapped by hand)","Recapped with two hands","Thrown in the regular trash","Placed on the tray"],e:"Activate the safety feature and drop the whole unit into a sharps container right away."},
+ {c:"Safety & Infection Control",q:"A sharps container should be replaced when it is:",a:["About 3/4 full (at the fill line)","Completely overflowing","Half full","Once a year"],e:"Never overfill. Replace it at the fill line."},
+ {c:"Safety & Infection Control",q:"After a needlestick, the FIRST thing you should do is:",a:["Wash the area with soap and water","Finish the draw","Wait until end of shift to report","Squeeze it and keep working"],e:"Wash with soap and water right away, report to your supervisor, and get medical follow-up."},
+ {c:"Safety & Infection Control",q:"Standard Precautions means:",a:["Treat ALL blood and body fluids as potentially infectious","Only use gloves for known HIV patients","Wear masks for every patient","Only clean visible blood"],e:"Every patient, every time."},
+ {c:"Safety & Infection Control",q:"Which vaccine should phlebotomists receive (offered free by the employer)?",a:["Hepatitis B","Hepatitis C","HIV","Rabies"],e:"OSHA requires employers to offer the Hep B vaccine. There is no Hep C or HIV vaccine."},
+ {c:"Safety & Infection Control",q:"What does HIPAA protect?",a:["Patient privacy and health information","Worker safety","Lab equipment","Insurance prices"],e:"Never share patient info with anyone not involved in their care."},
+ {c:"Safety & Infection Control",q:"A patient refuses the blood draw. You should:",a:["Respect it, don't force it, and notify the nurse/supervisor","Draw anyway","Hold them down","Ignore it"],e:"Patients have the right to refuse. Drawing without consent can be assault/battery."},
+ // Anatomy
+ {c:"Anatomy & Terms",q:"Arteries carry blood:",a:["Away from the heart","Toward the heart","Only to the lungs","Only to the brain"],e:"Arteries = Away. Veins carry blood back toward the heart."},
+ {c:"Anatomy & Terms",q:"Which blood cell carries oxygen?",a:["Red blood cells (erythrocytes)","White blood cells","Platelets","Plasma"],e:"RBCs carry oxygen using hemoglobin."},
+ {c:"Anatomy & Terms",q:"Platelets (thrombocytes) help with:",a:["Clotting","Fighting infection","Carrying oxygen","Making hormones"],e:"Platelets stick together to plug leaks."},
+ {c:"Anatomy & Terms",q:"White blood cells are called:",a:["Leukocytes","Erythrocytes","Thrombocytes","Hepatocytes"],e:"Leuko = white. Erythro = red. Thrombo = clot."},
+ {c:"Anatomy & Terms",q:"The liquid part of blood that contains fibrinogen is:",a:["Plasma","Serum","Buffy coat","Hemoglobin"],e:"Plasma has fibrinogen (anticoagulated). Serum doesn't (it was used up in the clot)."},
+ {c:"Anatomy & Terms",q:"The layer of white cells and platelets after centrifuging is called the:",a:["Buffy coat","Serum","Gel barrier","Clot"],e:"Top: plasma. Middle: buffy coat (WBCs + platelets). Bottom: RBCs."},
+ {c:"Anatomy & Terms",q:"'Hemo' or 'hema' means:",a:["Blood","Liver","Heart","Bone"],e:"Hematology = study of blood."},
+ {c:"Anatomy & Terms",q:"'STAT' means:",a:["Immediately","Fasting","Routine","Timed"],e:"STAT = immediately (from Latin 'statim'). Highest priority."},
+ {c:"Anatomy & Terms",q:"'NPO' means:",a:["Nothing by mouth","No pain observed","Normal patient order","Not phlebotomy ordered"],e:"NPO = nil per os (nothing by mouth)."},
+ {c:"Anatomy & Terms",q:"'ASAP' priority ranks:",a:["Between STAT and routine","Above STAT","Below routine","Same as fasting"],e:"STAT → ASAP → Routine."}
+];
+
+const FLASH = [
+ ["Order of draw (7 main)","Culture → Light blue → Red → Gold SST → Green → Lavender → Gray"],
+ ["Mnemonic for order of draw","Stop Light Red Stay Put, Green Light Go<br><small>Sterile · Light blue · Red · SST · PST · Green · Lavender · Gray</small>"],
+ ["Capillary order of draw","Blood gases → EDTA (lavender) → other additive tubes → Serum (red/gold) last"],
+ ["Light blue tube","Sodium citrate (3.2%)<br>Coag: PT/INR, PTT, D-dimer, fibrinogen<br>Invert 3–4 · Must be FULL (9:1)"],
+ ["Red tube","Clot activator (plastic) / none (glass)<br>Serum: chemistry, serology, blood bank<br>Invert 5 (plastic)"],
+ ["Gold / Tiger SST","Clot activator + gel<br>Serum: CMP, BMP, lipids, liver, TSH<br>Invert 5 · clot 30 min"],
+ ["Light green PST","Lithium heparin + gel<br>Plasma: STAT chemistry, electrolytes<br>Invert 8–10"],
+ ["Dark green tube","Sodium or lithium heparin<br>Ammonia (on ice), chemistry<br>Invert 8–10"],
+ ["Lavender tube","EDTA<br>CBC, HbA1c, ESR, retic, smear<br>Invert 8–10"],
+ ["Pink tube","K2 EDTA<br>Blood bank: type & screen, crossmatch<br>Invert 8–10"],
+ ["Gray tube","Sodium fluoride + potassium oxalate<br>Glucose, GTT, lactic acid, blood alcohol<br>Invert 8–10"],
+ ["Royal blue tube","Trace-element free<br>Zinc, copper, heavy metals, toxicology"],
+ ["Tan tube","Lead-free K2 EDTA<br>Blood lead level"],
+ ["Yellow tube (two kinds)","SPS = blood cultures<br>ACD = DNA, paternity, HLA typing"],
+ ["How does heparin work?","Inhibits thrombin (antithrombin)"],
+ ["How do EDTA, citrate & oxalate work?","They bind CALCIUM so blood can't clot"],
+ ["Sodium fluoride does what?","Antiglycolytic – stops cells from using up glucose"],
+ ["Serum vs. plasma","Serum = clotted, NO fibrinogen<br>Plasma = anticoagulated, HAS fibrinogen"],
+ ["Gauge rule","Higher number = SMALLER needle<br>(25g is thinner than 21g)"],
+ ["Routine needle gauge","21g (22g also common)"],
+ ["Butterfly gauge range","21–25g · 23g most common"],
+ ["Butterfly angle","10–15 degrees"],
+ ["Standard needle angle","15–30 degrees, bevel UP"],
+ ["Butterfly + light blue first?","Draw a DISCARD tube first to fill the tubing's air space"],
+ ["When to use a butterfly","Small/fragile veins, hand veins, children, elderly, difficult draws"],
+ ["Vein of first choice","Median cubital"],
+ ["Vein of second choice","Cephalic (thumb side)"],
+ ["Vein of last choice & why","Basilic – near the brachial artery and median nerve"],
+ ["Tourniquet placement","3–4 inches above the site"],
+ ["Tourniquet time limit","1 minute max (or hemoconcentration)"],
+ ["Patient ID","At least 2 identifiers (name + DOB or MRN). Never room number."],
+ ["Cleaning the site","70% isopropyl alcohol, ~30 sec, let AIR DRY"],
+ ["Label tubes when?","At the bedside, right after the draw, in front of the patient"],
+ ["Label must include","Name, DOB/ID, date, time, your initials"],
+ ["Heel stick site","Medial or lateral plantar surface of the heel"],
+ ["Heel stick max depth","2.0 mm"],
+ ["Fingerstick site","Middle or ring finger, fleshy pad, across the fingerprint"],
+ ["First drop in a skin puncture","Wipe it away (tissue fluid)"],
+ ["Keep CHILLED","Ammonia, lactic acid, ABGs (also gastrin, PTH per lab)"],
+ ["Protect from LIGHT","Bilirubin, B12, folate, carotene, vitamin A"],
+ ["Keep at BODY TEMP (37°C)","Cold agglutinins, cryoglobulin, cryofibrinogen"],
+ ["Hemolysis","Ruptured RBCs → falsely high potassium, LDH, AST"],
+ ["Hemoconcentration","Tourniquet too long → falsely high cells/proteins"],
+ ["Hematoma","Blood leaking into tissue – stop, remove tourniquet & needle, pressure"],
+ ["Syncope","Fainting – tourniquet off, needle out, lower head, get help"],
+ ["Petechiae","Tiny red spots – possible clotting issue, hold pressure longer"],
+ ["Nerve pain (shooting/electric)","Remove the needle IMMEDIATELY"],
+ ["Needlestick – first step","Wash with soap & water, then report"],
+ ["Sharps container","Replace at 3/4 full (fill line). Never recap by hand."],
+ ["OSHA","Worker safety · Bloodborne Pathogens Standard"],
+ ["CLSI","Sets lab standards, including order of draw"],
+ ["HIPAA","Protects patient privacy"],
+ ["STAT / ASAP / Routine","Immediately / as soon as possible / normal schedule"],
+ ["Peak vs. trough","Peak = highest level after dose<br>Trough = lowest, right before next dose"]
+];
+
+const STEPS = [
+ "Review the requisition (test order)",
+ "Perform hand hygiene",
+ "Identify the patient with 2 identifiers",
+ "Explain the procedure and get consent",
+ "Check fasting/diet and latex allergy; position the patient",
+ "Apply tourniquet 3–4 inches above site",
+ "Select and palpate the vein (release tourniquet)",
+ "Put on gloves",
+ "Clean site with 70% alcohol and let it air dry",
+ "Reapply tourniquet and anchor the vein",
+ "Insert needle bevel up at 15–30°",
+ "Fill tubes in order of draw and invert each",
+ "Release the tourniquet",
+ "Place gauze, remove needle, activate safety device",
+ "Apply pressure; discard needle in sharps",
+ "Label tubes at the bedside",
+ "Check site and apply bandage",
+ "Remove gloves, hand hygiene, thank patient",
+ "Transport specimens properly"
+];
+
+const SCENARIOS = [
+ {q:"Orders: CBC, CMP, PT/INR, and blood cultures.",need:["culture","lightblue","sst","lavender"]},
+ {q:"Orders: Glucose (fasting), HbA1c, Lipid panel.",need:["sst","lavender","gray"]},
+ {q:"Orders: PTT, Type & Screen, CBC.",need:["lightblue","lavender","pink"]},
+ {q:"Orders: Ammonia, Lactic acid, BMP.",need:["sst","green","gray"]},
+ {q:"Orders: Blood cultures, D-dimer, Electrolytes (STAT – PST), ESR.",need:["culture","lightblue","pst","lavender"]},
+ {q:"Orders: Blood lead, Glucose, Red-top serology.",need:["red","tan","gray"]},
+ {q:"Orders: Fibrinogen, Zinc (royal blue), CBC, Blood alcohol.",need:["lightblue","lavender","royal","gray"]}
+];
+
+/* =========================================================
+   STATE (saved on the phone)
+   ========================================================= */
+const KEY = "phleb-practice-v1";
+let S = load();
+function load(){
+  try{ return Object.assign({cats:{}, missed:[], quizzes:0, best:{}, games:0, known:[]}, JSON.parse(localStorage.getItem(KEY)||"{}")); }
+  catch(e){ return {cats:{}, missed:[], quizzes:0, best:{}, games:0, known:[]}; }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function record(cat, ok, qi){
+  const c = S.cats[cat] || (S.cats[cat] = {r:0,t:0});
+  c.t++; if(ok) c.r++;
+  if(qi>=0){
+    if(!ok && !S.missed.includes(qi)) S.missed.push(qi);
+    if(ok) S.missed = S.missed.filter(x=>x!==qi);
+  }
+  save();
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+function tube(id, big, blood=true){
+  const t = TUBES[id];
+  return `<div class="tube${big?' big':''}"><div class="body"></div>${blood?'<div class="blood"></div>':''}<div class="cap" style="background:${t.cap}"></div></div>`;
+}
+function setTab(t){ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.tab===t)); }
+function go(fn, tab){ if(tab) setTab(tab); const t=document.getElementById('toast'); if(t) t.style.opacity=0; window.scrollTo(0,0); fn(); }
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  const t=b.dataset.tab; go({home:home,learn:learn,practice:practice,progress:progress}[t], t);
+});
+function back(fn,label="Back"){ return `<button class="back" onclick="go(${fn})">‹ ${label}</button>`; }
+const CATS = [...new Set(QUESTIONS.map(q=>q.c))];
+
+/* =========================================================
+   HOME
+   ========================================================= */
+function home(){
+  const tot = Object.values(S.cats).reduce((a,c)=>a+c.t,0);
+  const right = Object.values(S.cats).reduce((a,c)=>a+c.r,0);
+  app.innerHTML = `
+  <div class="card">
+    <h2 style="margin-bottom:4px">Welcome back! 👋</h2>
+    <p class="muted">Study, then practice. Your progress saves on this phone.</p>
+    <div class="row" style="margin-top:10px;gap:24px">
+      <div><div class="stat">${tot}</div><div class="small muted">questions answered</div></div>
+      <div><div class="stat">${tot?Math.round(right/tot*100):0}%</div><div class="small muted">accuracy</div></div>
+      <div><div class="stat">${S.missed.length}</div><div class="small muted">to review</div></div>
+    </div>
+  </div>
+  <div class="grid">
+    <button class="tile" onclick="go(orderGame,'practice')"><span class="e">🧪</span>Order of Draw Game<small>Tap tubes in order</small></button>
+    <button class="tile" onclick="go(()=>quizSetup(),'practice')"><span class="e">❓</span>Practice Quiz<small>${QUESTIONS.length} questions</small></button>
+    <button class="tile" onclick="go(()=>flashcards(),'practice')"><span class="e">🃏</span>Flashcards<small>${FLASH.length} cards</small></button>
+    <button class="tile" onclick="go(()=>quizStart(examSet(),'Mock Exam',true),'practice')"><span class="e">📝</span>Mock Exam<small>25 random, scored</small></button>
+    <button class="tile" onclick="go(learnOrder,'learn')"><span class="e">🌈</span>Tube Guide<small>Colors, additives, tests</small></button>
+    <button class="tile" onclick="go(learnButterfly,'learn')"><span class="e">🦋</span>Butterfly & Needles<small>Gauges, angles, tips</small></button>
+  </div>
+  ${S.missed.length?`<button class="btn full" style="margin-top:14px" onclick="go(()=>quizStart(S.missed.map(i=>i),'Review Missed'),'practice')">🔁 Review ${S.missed.length} missed question${S.missed.length>1?'s':''}</button>`:''}
+  <div class="card" style="margin-top:14px">
+    <p class="small">💪 You've got this. Keep showing up and practicing a little every day.</p>
+    <p class="verse">"I can do all this through him who gives me strength." — Philippians 4:13</p>
+  </div>
+  <p class="small muted">Study aid only. Always follow your instructor, textbook, and facility policy — tube colors and some steps can vary by manufacturer and facility.</p>`;
+}
+
+/* =========================================================
+   LEARN
+   ========================================================= */
+function learn(){
+  const topics = [
+    ["🌈","Order of Draw & Tubes",learnOrder],
+    ["🦋","Butterfly, Needles & Equipment",learnButterfly],
+    ["🩹","Venipuncture Step-by-Step",learnSteps],
+    ["💪","Vein & Site Selection",learnSites],
+    ["👶","Capillary / Fingerstick / Heel Stick",learnCap],
+    ["❄️","Special Handling",learnSpecial],
+    ["⚠️","Complications & Errors",learnComp],
+    ["🧤","Safety & Infection Control",learnSafety],
+    ["🫀","Anatomy & Terms",learnTerms]
+  ];
+  window._topics = topics;
+  app.innerHTML = `<h2>Learn</h2>` + topics.map((t,i)=>`
+    <button class="opt" onclick="go(_topics[${i}][2])"><span style="font-size:20px;margin-right:8px">${t[0]}</span>${t[1]}</button>`).join("");
+}
+const L = fn => back("learn","Learn") ;
+
+function learnOrder(){
+  app.innerHTML = `${L()}
+  <h2>Order of Draw</h2>
+  <div class="tip"><b>Stop Light Red Stay Put, Green Light Go</b><br>
+   <span class="small">Sterile (cultures) · Light blue · Red · Stay (SST gold) · Put (PST) · Green · Light (lavender) · Go (gray)</span></div>
+  <div class="card">
+    ${BASIC_ORDER.map((id,i)=>`<div class="tubeRow"><div class="n">${i+1}</div>${tube(id)}<div><b>${TUBES[id].name}</b><span class="small muted">${TUBES[id].additive}</span></div></div>`).join("")}
+  </div>
+  <div class="tip small"><b>Why this order?</b> To stop additives from one tube carrying over into the next and messing up results. Example: EDTA (lavender) carryover → falsely HIGH potassium and LOW calcium. Citrate is drawn early so clot activator or other additives don't affect coag tests.</div>
+  <h3>Every tube in detail</h3>
+  <p class="small muted">Tap a tube to open it.</p>
+  ${FULL_ORDER.concat([]).map(id=>{const t=TUBES[id];return `
+    <details><summary><span style="display:inline-flex;vertical-align:middle;margin-right:8px">${tube(id,false,false)}</span>${t.name}</summary>
+      <table>
+        <tr><th>Additive</th><td>${t.additive}</td></tr>
+        <tr><th>Specimen</th><td>${t.spec}</td></tr>
+        <tr><th>Invert</th><td>${t.inv}</td></tr>
+        <tr><th>Dept</th><td>${t.dept}</td></tr>
+        <tr><th>Tests</th><td>${t.tests.map(x=>`<span class="pill">${x}</span>`).join("")}</td></tr>
+      </table>
+      <p class="small">${t.notes}</p>
+    </details>`}).join("")}
+  <details><summary>Yellow ACD tube</summary><p class="small">Acid citrate dextrose. Used for DNA/paternity testing and HLA typing. (Yellow SPS is a different tube — used for blood cultures.) Check where your program places ACD in the order.</p></details>
+  <h3>Capillary order (different!)</h3>
+  <div class="card small"><ol><li>Blood gases</li><li>EDTA (lavender) — platelets start clumping fast at the site</li><li>Other additive tubes (green, gray)</li><li>Serum tubes (red/gold) last</li></ol></div>
+  <button class="btn full" onclick="go(orderGame,'practice')">Practice with the Order of Draw Game →</button>`;
+}
+
+function learnButterfly(){
+  app.innerHTML = `${L()}
+  <h2>🦋 Butterfly, Needles & Equipment</h2>
+  <div class="card">
+    <h3 style="margin-top:0">Gauge basics</h3>
+    <p><b>Gauge = diameter of the needle.</b> The <b>higher</b> the number, the <b>smaller</b> the needle.</p>
+    <table>
+      <tr><th>Gauge</th><th>Use</th></tr>
+      <tr><td>16–18g</td><td>Blood donation (units of blood)</td></tr>
+      <tr><td><b>21g</b></td><td>Standard routine adult venipuncture</td></tr>
+      <tr><td>22g</td><td>Slightly smaller veins, also routine</td></tr>
+      <tr><td><b>23g</b></td><td>Most common butterfly size; small/fragile veins</td></tr>
+      <tr><td>25g</td><td>Very small veins (infants); higher hemolysis risk</td></tr>
+    </table>
+    <p class="small muted">Needle cap colors vary by manufacturer — learn the colors your lab uses.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Butterfly (winged infusion set)</h3>
+    <ul>
+      <li><b>When to use:</b> small, fragile, rolling or hand veins; children; elderly; patients with hard-to-find veins.</li>
+      <li><b>Angle:</b> shallow, <b>10–15°</b>, bevel up. Hold by the "wings."</li>
+      <li>You'll see a <b>"flash"</b> of blood in the tubing when you're in the vein.</li>
+      <li>Connects to a tube holder (ETS) or a syringe.</li>
+      <li>Usually 1/2 to 3/4 inch long needle.</li>
+    </ul>
+    <div class="warn"><b>Discard tube rule:</b> The tubing holds air (about 0.5 mL). If a <b>light blue</b> is your FIRST tube, draw a discard tube first (non-additive or another light blue) so the citrate tube fills to the correct 9:1 ratio.</div>
+    <div class="warn"><b>Needlestick risk:</b> butterflies cause a lot of needlesticks because the needle can recoil. Activate the safety device right away and control the tubing.</div>
+    <div class="tip small">Use <b>smaller-volume tubes</b> with small-gauge needles. A big vacuum pulling through a tiny needle can hemolyze the sample or collapse the vein.</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Standard ETS (Evacuated Tube System)</h3>
+    <ul>
+      <li>Multi-sample needle + tube holder + vacuum tubes.</li>
+      <li>Angle <b>15–30°</b>, bevel up.</li>
+      <li>Most common for routine draws on good antecubital veins.</li>
+      <li>Holders are single-use — throw away with the needle attached.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Syringe</h3>
+    <ul>
+      <li>Good for fragile veins that collapse under tube vacuum — you control the pull.</li>
+      <li>Pull the plunger gently (pulling hard = hemolysis).</li>
+      <li>Transfer blood with a <b>transfer device</b> (never push through the needle), filling tubes in the order of draw.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Other equipment</h3>
+    <ul>
+      <li>Tourniquet (latex-free), gloves, 70% alcohol pads, gauze, bandage/tape</li>
+      <li>Sharps container, tube holder, needles, tubes, labels, pen</li>
+      <li>Chlorhexidine / iodine prep for blood cultures (per policy)</li>
+      <li>Ice slurry, foil, heel warmer for special specimens</li>
+      <li>Lancets for capillary punctures, microcollection tubes</li>
+    </ul>
+  </div>`;
+}
+
+function learnSteps(){
+  app.innerHTML = `${L()}
+  <h2>🩹 Routine Venipuncture</h2>
+  <div class="card"><ol>${STEPS.map(s=>`<li>${s}</li>`).join("")}</ol></div>
+  <div class="tip small"><b>Key numbers:</b> tourniquet 3–4 in above site · max 1 min · angle 15–30° (butterfly 10–15°) · alcohol dries ~30 sec · 2 patient IDs.</div>
+  <div class="warn small">Never pull the needle out with the tourniquet still on. Never recap a needle by hand. Never pre-label tubes.</div>
+  <button class="btn full" onclick="go(stepsGame,'practice')">Practice putting the steps in order →</button>`;
+}
+
+function learnSites(){
+  app.innerHTML = `${L()}
+  <h2>💪 Vein & Site Selection</h2>
+  <div class="card">
+    <h3 style="margin-top:0">Antecubital veins (H pattern)</h3>
+    <table>
+      <tr><th>#</th><th>Vein</th><th>Notes</th></tr>
+      <tr><td>1st</td><td><b>Median cubital</b></td><td>Middle of the arm. Big, well anchored, less painful.</td></tr>
+      <tr><td>2nd</td><td><b>Cephalic</b></td><td>Thumb side (lateral). Harder to feel but safer than basilic.</td></tr>
+      <tr><td>Last</td><td><b>Basilic</b></td><td>Pinky side (medial). Near the <b>brachial artery</b> and <b>median nerve</b>. Rolls easily.</td></tr>
+    </table>
+    <p class="small">Other options: dorsal hand veins (use a butterfly). Never use veins on the palm side of the wrist. Foot/ankle veins only with a doctor's permission.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Finding a good vein</h3>
+    <ul>
+      <li><b>Palpate</b> (feel) with your index finger — a good vein feels bouncy and spongy.</li>
+      <li>Arteries <b>pulse</b>; tendons feel hard like a rope.</li>
+      <li>Help a vein show up: lower the arm, warm the site, have patient make a fist (no pumping!).</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Sites to AVOID</h3>
+    <ul>
+      <li>Same side as a <b>mastectomy</b></li>
+      <li>Arm with an <b>IV</b> (use other arm; if needed, below the IV after it's stopped 2+ min, per policy)</li>
+      <li><b>Fistula</b> / graft / shunt (dialysis)</li>
+      <li><b>Hematoma</b>, burns, scars, tattoos (if possible)</li>
+      <li><b>Edema</b> (swollen) areas</li>
+      <li>Sclerosed (hard, cord-like) or thrombosed veins</li>
+    </ul>
+  </div>`;
+}
+
+function learnCap(){
+  app.innerHTML = `${L()}
+  <h2>👶 Capillary Puncture</h2>
+  <div class="card">
+    <h3 style="margin-top:0">When to use</h3>
+    <p>Infants (under ~1 year), small amounts of blood, bedside glucose, patients with poor or limited veins, burns.</p>
+    <p class="small">Capillary blood = mix of arterial + venous blood + tissue fluid.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Fingerstick (adults & older kids)</h3>
+    <ul>
+      <li><b>Middle or ring finger</b> of the non-dominant hand</li>
+      <li>Fleshy pad, slightly off-center</li>
+      <li>Puncture <b>across</b> (perpendicular to) the fingerprint lines</li>
+      <li>Avoid thumb, index (calloused) and pinky (too thin)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Heel stick (infants)</h3>
+    <ul>
+      <li><b>Medial or lateral plantar surface</b> (outer edges of the bottom of the heel)</li>
+      <li>Depth no more than <b>2.0 mm</b> — avoid the heel bone (calcaneus)</li>
+      <li>Never the back of the heel, arch, or a previous puncture site</li>
+      <li>Warm the heel 3–5 min (≤42°C) — up to 7× more blood flow</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Steps that matter</h3>
+    <ul>
+      <li>Clean with 70% alcohol, let dry</li>
+      <li><b>Wipe away the first drop</b> (tissue fluid)</li>
+      <li>Gentle pressure, don't "milk" hard (dilutes & hemolyzes)</li>
+      <li>Capillary order: <b>blood gases → EDTA → other additives → serum</b></li>
+      <li>Newborn screening cards: fill each circle from ONE side in one drop, don't touch the paper</li>
+    </ul>
+  </div>`;
+}
+
+function learnSpecial(){
+  app.innerHTML = `${L()}
+  <h2>❄️ Special Handling</h2>
+  <div class="card"><h3 style="margin-top:0">🧊 Keep CHILLED (ice slurry)</h3>
+    <p>Ammonia · Lactic acid / lactate · Arterial blood gases (ABG) · plus some others like gastrin, PTH, ACTH (check your lab)</p></div>
+  <div class="card"><h3 style="margin-top:0">🌑 Protect from LIGHT (foil / amber)</h3>
+    <p>Bilirubin · Vitamin B12 · Folate · Carotene · Vitamin A</p>
+    <p class="small muted">Memory trick: "<b>B</b>right light <b>B</b>reaks down <b>F</b>ragile <b>C</b>hemicals" – Bili, B12, Folate, Carotene.</p></div>
+  <div class="card"><h3 style="margin-top:0">🌡️ Keep at BODY TEMP (37°C)</h3>
+    <p>Cold agglutinins · Cryoglobulins · Cryofibrinogen</p>
+    <p class="small muted">Trick: names starting with "cold/cryo" need to stay WARM.</p></div>
+  <div class="card"><h3 style="margin-top:0">⏰ Timed & fasting tests</h3>
+    <ul>
+      <li><b>Fasting</b>: usually 8–12 hrs no food (water OK) — glucose, lipids</li>
+      <li><b>GTT</b> (glucose tolerance): fasting draw, drink glucose, then draws at set times</li>
+      <li><b>Peak</b>: highest drug level, after dose · <b>Trough</b>: lowest, right before next dose</li>
+      <li>Record the EXACT time drawn</li>
+    </ul></div>
+  <div class="card"><h3 style="margin-top:0">Other</h3>
+    <ul>
+      <li><b>Blood alcohol</b>: clean site with non-alcohol prep; gray tube; may need chain of custody</li>
+      <li><b>Blood cultures</b>: strict sterile prep (chlorhexidine), wipe bottle tops, usually 2 sets from 2 sites</li>
+      <li><b>Chain of custody</b>: legal/drug tests — every person who handles it signs</li>
+    </ul></div>`;
+}
+
+function learnComp(){
+  app.innerHTML = `${L()}
+  <h2>⚠️ Complications & Errors</h2>
+  ${[
+   ["Hematoma","Blood leaking into tissue (bruise/swelling).","Needle went through the vein, partial insertion, needle out before tourniquet, not enough pressure.","Stop: tourniquet off, needle out, apply pressure."],
+   ["Syncope (fainting)","Patient passes out (vasovagal).","Fear, pain, sight of blood, fasting.","Tourniquet off, needle out, lower head, call for help, stay with them. Document."],
+   ["Hemolysis","Ruptured RBCs → pink/red serum. Raises K+, LDH, AST.","Small needle + big tube, shaking, wet alcohol, hard syringe pull, probing.","Redraw. Prevent by inverting gently and letting alcohol dry."],
+   ["Hemoconcentration","Cells/proteins become concentrated.","Tourniquet > 1 min, fist pumping, probing.","Keep tourniquet under 1 minute; no pumping."],
+   ["Nerve injury","Shooting, electric, or tingling pain.","Probing, deep or lateral sticks, basilic vein area.","Remove the needle IMMEDIATELY. Document."],
+   ["Arterial puncture","Bright red blood that pulses/spurts.","Too deep, especially at the basilic vein.","Remove needle, firm pressure 5+ min, report."],
+   ["Petechiae","Tiny red spots below the tourniquet.","Platelet / clotting problems (not your fault).","Hold pressure longer; check bleeding stopped."],
+   ["Collapsed vein","Blood flow suddenly stops.","Vacuum too strong for the vein; small fragile veins.","Use smaller tubes, butterfly, or syringe."],
+   ["Reflux","Tube additive flows back into the patient.","Tube filled cap-up / arm higher than tube.","Keep arm angled down and tubes below the site."],
+   ["No blood flow","Missed the vein.","Needle too shallow/deep, beside the vein, bevel against wall.","Slightly adjust; try a new tube. Never blindly probe. 2 attempts max, then get help."]
+  ].map(r=>`<details><summary>${r[0]}</summary><p><b>What:</b> ${r[1]}</p><p><b>Causes:</b> ${r[2]}</p><p><b>What to do:</b> ${r[3]}</p></details>`).join("")}
+  <div class="tip small"><b>Two-stick rule:</b> most facilities allow only 2 attempts per phlebotomist, then you get someone else.</div>
+  <h3>Reasons a specimen gets rejected</h3>
+  <div class="card small"><ul>
+    <li>Unlabeled or mislabeled</li><li>Wrong tube / wrong additive</li><li>Underfilled tube (esp. light blue)</li>
+    <li>Hemolyzed or clotted (in anticoagulant tube)</li><li>Wrong temperature / not protected from light</li><li>Too old / delayed transport</li>
+  </ul></div>`;
+}
+
+function learnSafety(){
+  app.innerHTML = `${L()}
+  <h2>🧤 Safety & Infection Control</h2>
+  <div class="card"><h3 style="margin-top:0">Chain of Infection</h3>
+    <p>Infectious agent → Reservoir → Portal of exit → Mode of transmission → Portal of entry → Susceptible host</p>
+    <p class="small">Break ANY link and you stop the infection. Hand hygiene breaks the "transmission" link.</p></div>
+  <div class="card"><h3 style="margin-top:0">Hand hygiene</h3>
+    <ul><li>Before and after every patient, and after removing gloves</li>
+    <li>Soap & water at least 20 seconds (always when visibly dirty or C. diff)</li>
+    <li>Alcohol hand rub is fine otherwise</li></ul></div>
+  <div class="card"><h3 style="margin-top:0">PPE order</h3>
+    <p><b>Put ON:</b> gown → mask → goggles/face shield → gloves</p>
+    <p><b>Take OFF:</b> gloves → goggles → gown → mask (then hand hygiene)</p></div>
+  <div class="card"><h3 style="margin-top:0">Needlestick / exposure</h3>
+    <ol><li>Wash with soap and water right away (flush eyes/mouth with water)</li><li>Report to supervisor immediately</li><li>Get medical evaluation & follow-up</li><li>Document</li></ol></div>
+  <div class="card"><h3 style="margin-top:0">Key rules</h3>
+    <ul>
+      <li><b>Standard Precautions</b>: treat all blood/body fluids as infectious</li>
+      <li><b>OSHA</b> Bloodborne Pathogens Standard: HBV, HCV, HIV</li>
+      <li>Employer must offer free <b>Hepatitis B vaccine</b></li>
+      <li>Sharps container at 3/4 full → replace; never recap by hand</li>
+      <li>Clean spills with 1:10 bleach solution (or approved disinfectant)</li>
+      <li>No eating, drinking, or applying makeup in the lab</li>
+      <li><b>HIPAA</b>: keep patient info private</li>
+    </ul></div>
+  <div class="card"><h3 style="margin-top:0">Isolation types</h3>
+    <ul><li><b>Contact</b> – gown & gloves (MRSA, C. diff)</li><li><b>Droplet</b> – mask (flu, pertussis)</li><li><b>Airborne</b> – N95 + negative pressure room (TB, measles, chickenpox)</li></ul></div>`;
+}
+
+function learnTerms(){
+  const terms = [
+    ["Erythrocyte","Red blood cell – carries oxygen (hemoglobin)"],["Leukocyte","White blood cell – fights infection"],
+    ["Thrombocyte","Platelet – clotting"],["Plasma","Liquid part of anticoagulated blood (has fibrinogen)"],
+    ["Serum","Liquid part of clotted blood (no fibrinogen)"],["Buffy coat","WBCs + platelets layer after spinning"],
+    ["Hemostasis","The body's process to stop bleeding"],["Artery","Carries blood AWAY from the heart"],
+    ["Vein","Carries blood TOWARD the heart"],["Capillary","Tiny vessel linking arteries and veins"],
+    ["Antecubital fossa","Bend in front of the elbow"],["Hemolysis","Destruction of RBCs"],
+    ["Lipemic","Cloudy/milky serum from fats (non-fasting)"],["Icteric","Yellow serum from high bilirubin"],
+    ["Anticoagulant","Prevents clotting"],["Antiglycolytic","Prevents breakdown of glucose"],
+    ["STAT","Immediately"],["ASAP","As soon as possible"],["NPO","Nothing by mouth"],
+    ["FBS","Fasting blood sugar"],["CBC","Complete blood count"],["CMP / BMP","Comprehensive / Basic metabolic panel"],
+    ["PT/INR","Prothrombin time / International Normalized Ratio (warfarin/Coumadin)"],["PTT / aPTT","Partial thromboplastin time (heparin therapy)"],
+    ["ESR","Erythrocyte sedimentation rate"],["HbA1c","Average blood sugar over ~3 months"],
+    ["ABG","Arterial blood gas"],["GTT","Glucose tolerance test"],["TDM","Therapeutic drug monitoring"],
+    ["-emia","In the blood"],["-ology","Study of"],["-ectomy","Removal of"],["-itis","Inflammation"],
+    ["hemat-/hemo-","Blood"],["phleb-/ven-","Vein"],["-tomy","Cutting/incision"],["cyte","Cell"]
+  ];
+  app.innerHTML = `${L()}
+  <h2>🫀 Anatomy & Terms</h2>
+  <div class="card small"><p><b>Blood is about</b> 55% plasma and 45% formed elements (cells). Average adult has about 5 liters of blood.</p>
+  <p><b>Spun tube layers:</b> top = plasma/serum · middle = buffy coat · bottom = red cells.</p>
+  <p><b>Blood flow:</b> Heart → arteries → arterioles → capillaries → venules → veins → heart</p></div>
+  <div class="card"><table>${terms.map(t=>`<tr><td><b>${t[0]}</b></td><td>${t[1]}</td></tr>`).join("")}</table></div>`;
+}
+
+/* =========================================================
+   PRACTICE
+   ========================================================= */
+function practice(){
+  app.innerHTML = `<h2>Practice</h2>
+  <div class="grid">
+    <button class="tile" onclick="go(orderGame)"><span class="e">🧪</span>Order of Draw<small>Tap tubes in the right order</small></button>
+    <button class="tile" onclick="go(scenarioGame)"><span class="e">📋</span>Requisition Drill<small>Read orders → pick tubes in order</small></button>
+    <button class="tile" onclick="go(tubeMatch)"><span class="e">🎨</span>Name That Tube<small>See a cap color, name it</small></button>
+    <button class="tile" onclick="go(stepsGame)"><span class="e">🩹</span>Procedure Steps<small>Put the venipuncture in order</small></button>
+    <button class="tile" onclick="go(()=>quizSetup())"><span class="e">❓</span>Quiz by Topic<small>Pick categories</small></button>
+    <button class="tile" onclick="go(()=>flashcards())"><span class="e">🃏</span>Flashcards<small>Flip & self-check</small></button>
+    <button class="tile" onclick="go(()=>quizStart(examSet(),'Mock Exam',true))"><span class="e">📝</span>Mock Exam<small>25 questions, graded</small></button>
+    <button class="tile" onclick="go(()=>S.missed.length?quizStart([...S.missed],'Review Missed'):alert('No missed questions yet — nice!'))"><span class="e">🔁</span>Review Missed<small>${S.missed.length} saved</small></button>
+  </div>`;
+}
+
+/* ---------- Order of Draw game ---------- */
+let OG = {};
+function orderGame(mode){
+  mode = mode || OG.mode || "basic";
+  const ids = mode==="basic" ? BASIC_ORDER : FULL_ORDER;
+  OG = {mode, ids, picked:[], mistakes:0, start:Date.now()};
+  renderOrder();
+}
+function renderOrder(){
+  const {mode, ids, picked} = OG;
+  const done = picked.length===ids.length;
+  if(!OG.bank) OG.bank = shuffle(ids);
+  if(OG.bank.length!==ids.length || !ids.every(i=>OG.bank.includes(i))) OG.bank = shuffle(ids);
+  app.innerHTML = `${back("practice","Practice")}
+  <h2>🧪 Order of Draw Game</h2>
+  <div class="chips">
+    <button class="chip ${mode==='basic'?'on':''}" onclick="OG.bank=null;orderGame('basic')">Basic (7 tubes)</button>
+    <button class="chip ${mode==='full'?'on':''}" onclick="OG.bank=null;orderGame('full')">Advanced (11 tubes)</button>
+  </div>
+  <p class="small muted">Tap the tubes in the correct venipuncture order. Tubes in the same group (like red & gold, or lavender/pink/royal/tan) can go in either order.</p>
+  <div class="slots">${ids.map((_,i)=>picked[i]?`<div class="slot">${tube(picked[i])}<span>${i+1}</span></div>`:`<div class="slot"><div class="ph"></div><span>${i+1}</span></div>`).join("")}</div>
+  ${done?`<div class="feedback ${OG.mistakes?'no':'ok'}" style="margin-top:12px">
+      <b>${OG.mistakes?'Done!':'Perfect! 🎉'}</b> ${OG.mistakes} mistake${OG.mistakes===1?'':'s'} · ${Math.round((Date.now()-OG.start)/1000)} sec
+      <div class="small" style="margin-top:6px">${ids.map(i=>TUBES[i].short).join(" → ")}</div></div>
+    <button class="btn full" style="margin-top:12px" onclick="OG.bank=null;orderGame()">Play again</button>`
+  :`<div class="bank">${OG.bank.map(id=>`<button class="tbtn ${picked.includes(id)?'used':''}" id="tb-${id}" onclick="pickTube('${id}')">${tube(id,false,false)}${TUBES[id].short}</button>`).join("")}</div>
+    <p class="small muted" style="text-align:center">Mistakes: ${OG.mistakes}</p>`}`;
+}
+function pickTube(id){
+  const remaining = OG.ids.filter(i=>!OG.picked.includes(i));
+  const minRank = Math.min(...remaining.map(i=>TUBES[i].rank));
+  if(TUBES[id].rank===minRank){
+    OG.picked.push(id);
+    if(OG.picked.length===OG.ids.length){ S.games++; save(); }
+    renderOrder();
+  } else {
+    OG.mistakes++;
+    const el = document.getElementById("tb-"+id);
+    el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+    const hint = remaining.filter(i=>TUBES[i].rank===minRank).map(i=>TUBES[i].short).join(" or ");
+    toast(`Not yet! Next should be: ${hint}`);
+    document.querySelector(".bank+p").textContent = `Mistakes: ${OG.mistakes}`;
+  }
+}
+function toast(msg){
+  let t = document.getElementById("toast");
+  if(!t){ t=document.createElement("div"); t.id="toast";
+    t.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:9;max-width:90%;text-align:center;transition:opacity .3s";
+    document.body.appendChild(t);}
+  t.textContent=msg; t.style.opacity=1; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity=0,1800);
+}
+
+/* ---------- Requisition scenario drill ---------- */
+let SC = {};
+function scenarioGame(){
+  const s = SCENARIOS[Math.random()*SCENARIOS.length|0];
+  const distract = shuffle(FULL_ORDER.filter(i=>!s.need.includes(i))).slice(0,3);
+  SC = {s, bank:shuffle([...s.need,...distract]), picked:[], mistakes:0};
+  renderScenario();
+}
+function renderScenario(){
+  const {s,bank,picked} = SC;
+  const done = picked.length===s.need.length;
+  app.innerHTML = `${back("practice","Practice")}
+  <h2>📋 Requisition Drill</h2>
+  <div class="card"><b>${s.q}</b><p class="small muted">Tap ONLY the tubes you need, in the correct order of draw.</p></div>
+  <div class="slots">${s.need.map((_,i)=>picked[i]?`<div class="slot">${tube(picked[i])}<span>${TUBES[picked[i]].short}</span></div>`:`<div class="slot"><div class="ph">?</div></div>`).join("")}</div>
+  ${done?`<div class="feedback ${SC.mistakes?'no':'ok'}" style="margin-top:12px"><b>${SC.mistakes?'Completed':'Perfect! 🎉'}</b> — ${SC.mistakes} mistake${SC.mistakes===1?'':'s'}
+     <div class="small" style="margin-top:6px">${s.need.map(i=>TUBES[i].short).join(" → ")}</div></div>
+     <button class="btn full" style="margin-top:12px" onclick="scenarioGame()">Next requisition</button>`
+   :`<div class="bank">${bank.map(id=>`<button class="tbtn ${picked.includes(id)?'used':''}" id="sc-${id}" onclick="pickSc('${id}')">${tube(id,false,false)}${TUBES[id].short}</button>`).join("")}</div>`}`;
+}
+function pickSc(id){
+  const {s,picked} = SC;
+  const remaining = s.need.filter(i=>!picked.includes(i));
+  const minRank = Math.min(...remaining.map(i=>TUBES[i].rank));
+  const el = document.getElementById("sc-"+id);
+  if(!s.need.includes(id)){ SC.mistakes++; el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); toast(`${TUBES[id].short} isn't needed for these tests.`); return; }
+  if(TUBES[id].rank!==minRank){ SC.mistakes++; el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); toast("Right tube, wrong order!"); return; }
+  // keep slot order in "need" sequence for equal ranks
+  picked.push(id); renderScenario();
+}
+
+/* ---------- Name that tube ---------- */
+let TM = {score:0, n:0};
+function tubeMatch(){
+  const id = FULL_ORDER[Math.random()*FULL_ORDER.length|0];
+  const askTest = Math.random()<.5;
+  const opts = shuffle([id, ...shuffle(FULL_ORDER.filter(x=>TUBES[x].rank!==TUBES[id].rank)).slice(0,3)]);
+  TM.cur = {id, askTest};
+  const t = TUBES[id];
+  const test = t.tests[Math.random()*t.tests.length|0];
+  app.innerHTML = `${back("practice","Practice")}
+  <h2>🎨 Name That Tube</h2>
+  <p class="small muted">Score: ${TM.score}/${TM.n}</p>
+  <div class="card" style="text-align:center">
+    ${askTest?`<p class="muted small">Which tube is used for…</p><h2>${test}</h2>`
+             :`<div style="display:flex;justify-content:center;margin:6px 0 10px">${tube(id,true)}</div><p class="muted small">What is this tube's additive?</p>`}
+  </div>
+  ${opts.map(o=>`<button class="opt" data-o="${o}" onclick="tmAnswer(this,'${o}')">${askTest?`<span style="display:inline-flex;vertical-align:middle;margin-right:10px">${tube(o,false,false)}</span>${TUBES[o].name}`:TUBES[o].additive}</button>`).join("")}
+  <div id="tmfb"></div>`;
+}
+function tmAnswer(btn,o){
+  const {id} = TM.cur; TM.n++;
+  document.querySelectorAll(".opt").forEach(b=>{ b.disabled=true; if(b.dataset.o===id) b.classList.add("right"); });
+  const ok = o===id; if(ok) TM.score++; else btn.classList.add("wrong");
+  record("Tubes & Additives", ok, -1);
+  document.getElementById("tmfb").innerHTML = `<div class="feedback ${ok?'ok':'no'}"><b>${ok?'Correct!':'Not quite.'}</b> ${TUBES[id].name}: ${TUBES[id].additive}. Used for ${TUBES[id].tests.join(", ")}.</div>
+  <button class="btn full" style="margin-top:12px" onclick="tubeMatch()">Next →</button>`;
+}
+
+/* ---------- Procedure steps game ---------- */
+let SG = {};
+function stepsGame(){
+  SG = {bank:shuffle(STEPS.map((s,i)=>i)), next:0, mistakes:0};
+  renderSteps();
+}
+function renderSteps(){
+  const done = SG.next===STEPS.length;
+  app.innerHTML = `${back("practice","Practice")}
+  <h2>🩹 Procedure Steps</h2>
+  <p class="small muted">Tap the steps of a routine venipuncture in order. Step ${Math.min(SG.next+1,STEPS.length)} of ${STEPS.length} · Mistakes: ${SG.mistakes}</p>
+  <div class="bar"><i style="width:${SG.next/STEPS.length*100}%"></i></div>
+  ${done?`<div class="feedback ${SG.mistakes?'no':'ok'}"><b>${SG.mistakes?'Finished!':'Flawless! 🎉'}</b> ${SG.mistakes} mistake${SG.mistakes===1?'':'s'}.</div>
+     <button class="btn full" style="margin-top:12px" onclick="stepsGame()">Try again</button>
+     <div class="card" style="margin-top:14px"><ol class="small">${STEPS.map(s=>`<li>${s}</li>`).join("")}</ol></div>`
+  : SG.bank.map(i=>`<button class="stepbtn ${i<SG.next?'done':''}" id="st-${i}" ${i<SG.next?'disabled':''} onclick="pickStep(${i})">${i<SG.next?`<b>${i+1}.</b> `:''}${STEPS[i]}</button>`).join("")}`;
+}
+function pickStep(i){
+  if(i===SG.next){ SG.next++; renderSteps(); }
+  else { SG.mistakes++; const el=document.getElementById("st-"+i); el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+    document.querySelector("p.small.muted").textContent = `Tap the steps of a routine venipuncture in order. Step ${SG.next+1} of ${STEPS.length} · Mistakes: ${SG.mistakes}`; }
+}
+
+/* ---------- Quiz ---------- */
+let QZ = {};
+let quizCats = new Set(CATS);
+function quizSetup(){
+  app.innerHTML = `${back("practice","Practice")}
+  <h2>❓ Quiz by Topic</h2>
+  <p class="small muted">Choose the topics you want to practice.</p>
+  <div class="chips">${CATS.map((c,i)=>`<button class="chip ${quizCats.has(c)?'on':''}" onclick="toggleCat(${i})">${c} (${QUESTIONS.filter(q=>q.c===c).length})</button>`).join("")}</div>
+  <div class="row" style="margin:8px 0 16px"><button class="chip" onclick="quizCats=new Set(CATS);quizSetup()">Select all</button><button class="chip" onclick="quizCats=new Set();quizSetup()">Clear</button></div>
+  <p><b>How many questions?</b></p>
+  <div class="chips">${[10,20,"All"].map(n=>`<button class="chip" onclick="startTopic('${n}')">${n}</button>`).join("")}</div>`;
+}
+function toggleCat(i){ const c=CATS[i]; quizCats.has(c)?quizCats.delete(c):quizCats.add(c); quizSetup(); }
+function startTopic(n){
+  let pool = QUESTIONS.map((q,i)=>i).filter(i=>quizCats.has(QUESTIONS[i].c));
+  if(!pool.length){ toast("Pick at least one topic"); return; }
+  pool = shuffle(pool); if(n!=="All") pool = pool.slice(0,+n);
+  quizStart(pool, "Quiz");
+}
+function examSet(){ return shuffle(QUESTIONS.map((q,i)=>i)).slice(0,25); }
+function quizStart(list, title, exam=false){
+  QZ = {list:shuffle(list), i:0, right:0, title, exam, wrongs:[]};
+  renderQ();
+}
+function renderQ(){
+  if(QZ.i>=QZ.list.length) return quizEnd();
+  const qi = QZ.list[QZ.i], q = QUESTIONS[qi];
+  const opts = shuffle(q.a.map((t,k)=>({t,k})));
+  app.innerHTML = `${back("practice","Quit")}
+  <div class="row" style="justify-content:space-between"><b>${QZ.title}</b><span class="small muted">${QZ.i+1} / ${QZ.list.length}</span></div>
+  <div class="bar"><i style="width:${QZ.i/QZ.list.length*100}%"></i></div>
+  <span class="pill">${q.c}</span>
+  <h3 style="font-size:19px">${q.q}</h3>
+  ${opts.map(o=>`<button class="opt" data-k="${o.k}" onclick="answer(this,${o.k})">${o.t}</button>`).join("")}
+  <div id="fb"></div>`;
+}
+function answer(btn,k){
+  const qi = QZ.list[QZ.i], q = QUESTIONS[qi], ok = k===0;
+  document.querySelectorAll(".opt").forEach(b=>{ b.disabled=true; if(b.dataset.k==="0") b.classList.add("right"); });
+  if(!ok){ btn.classList.add("wrong"); QZ.wrongs.push(qi); } else QZ.right++;
+  record(q.c, ok, qi);
+  document.getElementById("fb").innerHTML = `<div class="feedback ${ok?'ok':'no'}"><b>${ok?'✅ Correct!':'❌ Not quite.'}</b> ${q.e}</div>
+  <button class="btn full" style="margin-top:12px" onclick="QZ.i++;renderQ();window.scrollTo(0,0)">${QZ.i+1<QZ.list.length?'Next →':'See results'}</button>`;
+}
+function quizEnd(){
+  const pct = Math.round(QZ.right/QZ.list.length*100);
+  S.quizzes++;
+  if(QZ.exam){ S.best.exam = Math.max(S.best.exam||0, pct); }
+  save();
+  const pass = pct>=70;
+  app.innerHTML = `<h2>${QZ.title} results</h2>
+  <div class="card" style="text-align:center">
+    <div class="stat" style="font-size:52px">${pct}%</div>
+    <p>${QZ.right} of ${QZ.list.length} correct</p>
+    <p>${pct>=90?'Outstanding! 🌟':pass?'Nice work — keep going! 💪':'Keep practicing — you\'re learning! 📚'}</p>
+    ${QZ.exam?`<p class="small muted">Many certification exams require about 70% to pass. Best mock exam: ${S.best.exam}%</p>`:''}
+  </div>
+  ${QZ.wrongs.length?`<h3>Review what you missed</h3>${QZ.wrongs.map(i=>`<div class="card small"><b>${QUESTIONS[i].q}</b><p>✅ ${QUESTIONS[i].a[0]}</p><p class="muted">${QUESTIONS[i].e}</p></div>`).join("")}
+    <button class="btn full" onclick="quizStart([...QZ.wrongs],'Retry Missed')">Retry the ${QZ.wrongs.length} I missed</button>`:''}
+  <button class="btn alt full" style="margin-top:10px" onclick="go(practice)">Back to Practice</button>`;
+}
+
+/* ---------- Flashcards ---------- */
+let FC = {};
+function flashcards(onlyUnknown){
+  let deck = FLASH.map((_,i)=>i);
+  if(onlyUnknown) deck = deck.filter(i=>!S.known.includes(i));
+  if(!deck.length){ toast("You know them all! Resetting deck."); S.known=[]; save(); deck = FLASH.map((_,i)=>i); }
+  FC = {deck:shuffle(deck), i:0, onlyUnknown};
+  renderFC();
+}
+function renderFC(){
+  if(FC.i>=FC.deck.length){
+    app.innerHTML = `${back("practice","Practice")}<h2>🃏 Deck finished!</h2>
+    <div class="card"><p>You marked <b>${S.known.length}</b> of ${FLASH.length} cards as known.</p></div>
+    <button class="btn full" onclick="flashcards(true)">Study cards I still need</button>
+    <button class="btn alt full" style="margin-top:10px" onclick="flashcards()">Shuffle all cards</button>`;
+    return;
+  }
+  const c = FLASH[FC.deck[FC.i]];
+  app.innerHTML = `${back("practice","Practice")}
+  <div class="row" style="justify-content:space-between"><b>🃏 Flashcards</b><span class="small muted">${FC.i+1} / ${FC.deck.length}</span></div>
+  <div class="bar"><i style="width:${FC.i/FC.deck.length*100}%"></i></div>
+  <div class="flash" id="fc" onclick="this.classList.toggle('flip')">
+    <div class="in"><div class="f"><span class="lbl">Question · tap to flip</span>${c[0]}</div><div class="b"><span class="lbl">Answer</span>${c[1]}</div></div>
+  </div>
+  <div class="row" style="gap:10px">
+    <button class="btn alt" style="flex:1" onclick="fcMark(false)">😕 Still learning</button>
+    <button class="btn" style="flex:1" onclick="fcMark(true)">😀 Got it</button>
+  </div>
+  <p class="small muted" style="text-align:center;margin-top:10px">Known: ${S.known.length} / ${FLASH.length}</p>`;
+}
+function fcMark(k){
+  const id = FC.deck[FC.i];
+  if(k && !S.known.includes(id)) S.known.push(id);
+  if(!k) S.known = S.known.filter(x=>x!==id);
+  save(); FC.i++; renderFC();
+}
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+function progress(){
+  const rows = CATS.map(c=>{ const s=S.cats[c]||{r:0,t:0}; const p=s.t?Math.round(s.r/s.t*100):null; return {c,s,p}; });
+  const weak = rows.filter(r=>r.p!==null && r.p<70).sort((a,b)=>a.p-b.p);
+  app.innerHTML = `<h2>📊 Progress</h2>
+  <div class="card"><div class="row" style="gap:24px">
+    <div><div class="stat">${S.quizzes}</div><div class="small muted">quizzes</div></div>
+    <div><div class="stat">${S.games}</div><div class="small muted">order games</div></div>
+    <div><div class="stat">${S.best.exam!=null?S.best.exam+'%':'—'}</div><div class="small muted">best mock exam</div></div>
+    <div><div class="stat">${S.known.length}/${FLASH.length}</div><div class="small muted">cards known</div></div>
+  </div></div>
+  <div class="card">
+    <h3 style="margin-top:0">By topic</h3>
+    ${rows.map(r=>`<div style="margin:10px 0"><div class="row" style="justify-content:space-between"><span class="small">${r.c}</span><span class="small muted">${r.p===null?'not started':r.p+'% ('+r.s.r+'/'+r.s.t+')'}</span></div>
+      <div class="bar" style="margin:4px 0"><i style="width:${r.p||0}%;background:${r.p===null?'var(--line)':r.p>=80?'var(--ok)':r.p>=60?'var(--warn)':'var(--bad)'}"></i></div></div>`).join("")}
+  </div>
+  ${weak.length?`<div class="tip"><b>Focus on:</b> ${weak.map(w=>w.c).join(", ")}</div>`:''}
+  ${S.missed.length?`<button class="btn full" onclick="quizStart([...S.missed],'Review Missed')">🔁 Review ${S.missed.length} missed questions</button>`:''}
+  <button class="btn alt full" style="margin-top:12px" onclick="if(confirm('Reset all progress?')){localStorage.removeItem(KEY);S=load();progress();}">Reset progress</button>`;
+}
+
+/* start */
+setTab("home"); home();
+</script>
+</body>
+</html>
