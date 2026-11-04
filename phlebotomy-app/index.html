@@ -747,7 +747,7 @@ function practice(){
     <button class="tile" onclick="go(()=>quizSetup())"><span class="e">❓</span>Quiz by Topic<small>Pick categories</small></button>
     <button class="tile" onclick="go(()=>flashcards())"><span class="e">🃏</span>Flashcards<small>Flip & self-check</small></button>
     <button class="tile" onclick="go(()=>quizStart(examSet(),'Mock Exam',true))"><span class="e">📝</span>Mock Exam<small>25 questions, graded</small></button>
-    <button class="tile" onclick="go(()=>S.missed.length?quizStart([...S.missed],'Review Missed'):alert('No missed questions yet — nice!'))"><span class="e">🔁</span>Review Missed<small>${S.missed.length} saved</small></button>
+    <button class="tile" onclick="go(()=>S.missed.length?quizStart([...S.missed],'Review Missed'):toast('No missed questions yet — nice!'))"><span class="e">🔁</span>Review Missed<small>${S.missed.length} saved</small></button>
   </div>`;
 }
 
@@ -1004,7 +1004,7 @@ function progress(){
   </div>
   ${weak.length?`<div class="tip"><b>Focus on:</b> ${weak.map(w=>w.c).join(", ")}</div>`:''}
   ${S.missed.length?`<button class="btn full" onclick="quizStart([...S.missed],'Review Missed')">🔁 Review ${S.missed.length} missed questions</button>`:''}
-  <button class="btn alt full" style="margin-top:12px" onclick="if(confirm('Reset all progress?')){localStorage.removeItem(KEY);S=load();progress();}">Reset progress</button>`;
+  <button class="btn alt full" style="margin-top:12px" onclick="if(this.dataset.sure){try{localStorage.removeItem(KEY)}catch(e){};S=load();progress();toast('Progress reset')}else{this.dataset.sure=1;this.textContent='Tap again to confirm reset'}">Reset progress</button>`;
 }
 
 /* start */
