@@ -14,7 +14,7 @@ function load() {
   try { return Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); }
   catch { return fresh(); }
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(S)); renderWallet(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} renderWallet(); }
 
 // ---------- helpers ----------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -414,8 +414,17 @@ function clubhouse() {
 }
 
 // ---------- boot ----------
+let resetArmed = false;
 $("#resetBtn").onclick = () => {
-  if (confirm("Erase your reader, tokens and clubhouse and start over?")) { localStorage.removeItem(KEY); S = fresh(); renderWallet(); go("home"); }
+  const btn = $("#resetBtn");
+  if (!resetArmed) {
+    resetArmed = true; btn.textContent = "Tap again to erase everything";
+    setTimeout(() => { resetArmed = false; btn.textContent = "Start over"; }, 3000);
+    return;
+  }
+  resetArmed = false; btn.textContent = "Start over";
+  try { localStorage.removeItem(KEY); } catch {}
+  S = fresh(); renderWallet(); go("home");
 };
 renderWallet();
 go("home");
