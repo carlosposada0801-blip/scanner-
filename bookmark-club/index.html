@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bookmark Club — Read, Earn, Decorate!</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="frame">
+    <header id="topbar">
+      <div class="logo" data-go="home">
+        <span class="logo-mark">🔖</span>
+        <span class="logo-text">Bookmark<b>Club</b></span>
+      </div>
+      <nav id="nav">
+        <button data-go="home">🏠 Home</button>
+        <button data-go="library">📚 Read</button>
+        <button data-go="games">🧩 Word Games</button>
+        <button data-go="catalog">🛍️ Catalog</button>
+        <button data-go="clubhouse">🏡 My Clubhouse</button>
+      </nav>
+      <div id="wallet" title="Your tokens">
+        <span class="coin">★</span><span id="tokenCount">0</span>
+      </div>
+    </header>
+
+    <main id="screen"></main>
+
+    <footer id="foot">
+      <span id="buddyFoot"></span>
+      <span>Bookmark Club · a fan-made reading clubhouse · progress saves in this browser</span>
+      <button id="resetBtn" class="link">Start over</button>
+    </footer>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
