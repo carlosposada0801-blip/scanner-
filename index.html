@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>Freedom Counter</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --card2: #273449; --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #22c55e; --accent2: #38bdf8; --danger: #ef4444; --warn: #f59e0b; --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 20px 16px 80px; }
+  header { text-align: center; margin-bottom: 16px; }
+  h1 { margin: 8px 0 4px; font-size: 1.8rem; }
+  .sub { color: var(--muted); margin: 0; }
+  .verse {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b); border-radius: var(--radius);
+    padding: 16px 18px; margin: 16px 0; font-style: italic; line-height: 1.5;
+  }
+  .verse cite { display: block; margin-top: 6px; font-style: normal; color: var(--accent2); font-size: .9rem; }
+  button {
+    font: inherit; border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer;
+    background: var(--card2); color: var(--text); transition: transform .08s, filter .15s;
+  }
+  button:active { transform: scale(.97); }
+  button:hover { filter: brightness(1.15); }
+  .primary { background: var(--accent); color: #052e16; font-weight: 600; }
+  .danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .ghost { background: transparent; color: var(--muted); }
+  .full { width: 100%; padding: 14px; font-size: 1.05rem; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin: 14px 0; }
+  .card h2 { margin: 0; font-size: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .why { color: var(--muted); font-size: .92rem; margin: 6px 0 0; }
+  .timer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0 10px; text-align: center; }
+  .timer div { background: var(--card2); border-radius: 12px; padding: 10px 4px; }
+  .timer b { display: block; font-size: 1.7rem; font-variant-numeric: tabular-nums; }
+  .timer span { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .stat { flex: 1 1 120px; background: var(--card2); border-radius: 12px; padding: 8px 10px; font-size: .85rem; color: var(--muted); }
+  .stat b { display: block; color: var(--text); font-size: 1.05rem; }
+  .progress { height: 10px; background: var(--card2); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .5s; }
+  .next { font-size: .85rem; color: var(--muted); margin-top: 12px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .badge { font-size: .75rem; padding: 4px 8px; border-radius: 99px; background: var(--card2); color: var(--muted); }
+  .badge.on { background: #14532d; color: #bbf7d0; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .actions .wide { grid-column: span 2; }
+  .urge { background: #0c4a6e; color: #e0f2fe; font-weight: 600; }
+  .icon-btn { background: transparent; color: var(--muted); padding: 4px 8px; font-size: 1.1rem; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+  .log { list-style: none; padding: 0; margin: 8px 0 0; font-size: .85rem; max-height: 180px; overflow: auto; }
+  .log li { padding: 6px 0; border-bottom: 1px solid var(--card2); color: var(--muted); }
+  .log li b { color: var(--text); font-weight: 500; }
+  dialog {
+    border: 0; border-radius: var(--radius); background: var(--card); color: var(--text);
+    width: min(92vw, 460px); padding: 20px;
+  }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  dialog h3 { margin-top: 0; }
+  label { display: block; font-size: .9rem; color: var(--muted); margin: 12px 0 4px; }
+  input, textarea, select {
+    width: 100%; font: inherit; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid #334155; background: var(--bg); color: var(--text);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(120px);
+    background: var(--accent); color: #052e16; padding: 12px 18px; border-radius: 12px; font-weight: 600;
+    transition: transform .3s; max-width: 90vw; text-align: center; z-index: 10;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  footer { text-align: center; margin-top: 30px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .help { font-size: .85rem; color: var(--muted); text-align: center; margin-top: 20px; line-height: 1.5; }
+  .help a { color: var(--accent2); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Freedom Counter</h1>
+    <p class="sub">One day at a time. Every hour counts.</p>
+  </header>
+
+  <div class="verse" id="verse"></div>
+
+  <div id="list"></div>
+
+  <button class="primary full" id="addBtn">+ Add something to quit</button>
+
+  <footer>
+    <button class="ghost" id="exportBtn">Export backup</button>
+    <button class="ghost" id="importBtn">Import backup</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </footer>
+
+  <p class="help">
+    Your data stays on this device only.<br>
+    Struggling? You're not alone. In the US, call or text <a href="tel:988">988</a> or
+    the SAMHSA helpline <a href="tel:18006624357">1-800-662-4357</a> (free, 24/7).
+  </p>
+</main>
+
+<dialog id="habitDialog">
+  <form method="dialog" id="habitForm">
+    <h3 id="dialogTitle">Add something to quit</h3>
+    <label for="fName">What are you quitting?</label>
+    <input id="fName" required maxlength="60" placeholder="e.g. Smoking, Porn, Alcohol, Social media">
+    <label for="fStart">Clean since</label>
+    <input id="fStart" type="datetime-local" required>
+    <label for="fCost">Money spent on it per day (optional)</label>
+    <input id="fCost" type="number" min="0" step="0.01" placeholder="0.00">
+    <label for="fWhy">Why are you quitting? (you'll see this when it's hard)</label>
+    <textarea id="fWhy" maxlength="300" placeholder="For my family, my health, my walk with God..."></textarea>
+    <div class="row">
+      <button type="button" class="ghost" id="cancelBtn">Cancel</button>
+      <button type="submit" class="primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="slipDialog">
+  <form method="dialog" id="slipForm">
+    <h3>It's okay. Get back up.</h3>
+    <p class="sub">A slip isn't the end. Your best streak is saved. What triggered it? Knowing helps next time.</p>
+    <label for="slipNote">Trigger / note (optional)</label>
+    <textarea id="slipNote" maxlength="200" placeholder="Bored, stressed, alone late at night..."></textarea>
+    <div class="row">
+      <button type="button" class="ghost" id="slipCancel">Cancel</button>
+      <button type="submit" class="danger" value="reset">Restart my counter</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const KEY = "freedom-counter-v1";
+  const DAY = 86400000;
+  const MILESTONES = [
+    [1, "1 day"], [3, "3 days"], [7, "1 week"], [14, "2 weeks"], [30, "1 month"],
+    [60, "2 months"], [90, "90 days"], [180, "6 months"], [365, "1 year"], [730, "2 years"]
+  ];
+  const VERSES = [
+    ["No temptation has overtaken you except what is common to mankind. And God is faithful; he will not let you be tempted beyond what you can bear. But when you are tempted, he will also provide a way out so that you can endure it.", "1 Corinthians 10:13"],
+    ["I can do all this through him who gives me strength.", "Philippians 4:13"],
+    ["Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!", "2 Corinthians 5:17"],
+    ["So if the Son sets you free, you will be free indeed.", "John 8:36"],
+    ["Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.", "Lamentations 3:22-23"],
+    ["My grace is sufficient for you, for my power is made perfect in weakness.", "2 Corinthians 12:9"],
+    ["Submit yourselves, then, to God. Resist the devil, and he will flee from you.", "James 4:7"],
+    ["Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.", "Galatians 6:9"],
+    ["The righteous may fall seven times but still get up.", "Proverbs 24:16"],
+    ["Therefore, there is now no condemnation for those who are in Christ Jesus.", "Romans 8:1"],
+    ["It is for freedom that Christ has set us free. Stand firm, then, and do not let yourselves be burdened again by a yoke of slavery.", "Galatians 5:1"],
+    ["Do not be overcome by evil, but overcome evil with good.", "Romans 12:21"],
+    ["Come to me, all you who are weary and burdened, and I will give you rest.", "Matthew 11:28"],
+    ["Being confident of this, that he who began a good work in you will carry it on to completion.", "Philippians 1:6"],
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  let state = load();
+  let editingId = null;
+  let slipId = null;
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || { habits: [] }; }
+    catch { return { habits: [] }; }
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+  function toLocalInput(ts) {
+    const d = new Date(ts); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }); }
+  function fmtDur(ms) {
+    const d = Math.floor(ms / DAY), h = Math.floor(ms % DAY / 3600000);
+    return d ? `${d}d ${h}h` : `${h}h ${Math.floor(ms % 3600000 / 60000)}m`;
+  }
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // Verse of the day
+  const dayIndex = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / DAY);
+  const [vText, vRef] = VERSES[dayIndex % VERSES.length];
+  $("verse").innerHTML = `“${esc(vText)}”<cite>— ${esc(vRef)} (NIV)</cite>`;
+
+  function bestStreak(h, now) {
+    return Math.max(h.best || 0, now - h.start);
+  }
+
+  function render() {
+    const list = $("list");
+    if (!state.habits.length) {
+      list.innerHTML = `<div class="empty">Nothing tracked yet.<br>Add the first thing you want freedom from.</div>`;
+      return;
+    }
+    list.innerHTML = state.habits.map(h => `
+      <section class="card" data-id="${h.id}">
+        <h2><span>${esc(h.name)}</span>
+          <span>
+            <button class="icon-btn" data-act="edit" title="Edit">✎</button>
+            <button class="icon-btn" data-act="delete" title="Delete">🗑</button>
+          </span>
+        </h2>
+        ${h.why ? `<p class="why">“${esc(h.why)}”</p>` : ""}
+        <div class="timer">
+          <div><b data-f="d">0</b><span>days</span></div>
+          <div><b data-f="h">0</b><span>hours</span></div>
+          <div><b data-f="m">0</b><span>min</span></div>
+          <div><b data-f="s">0</b><span>sec</span></div>
+        </div>
+        <div class="next" data-f="next"></div>
+        <div class="progress"><div data-f="bar"></div></div>
+        <div class="stats">
+          <div class="stat">Best streak<b data-f="best"></b></div>
+          <div class="stat">Urges resisted<b>${h.urges || 0}</b></div>
+          <div class="stat">Restarts<b>${(h.slips || []).length}</b></div>
+          ${h.cost > 0 ? `<div class="stat">Money saved<b data-f="saved"></b></div>` : ""}
+        </div>
+        <div class="badges" data-f="badges"></div>
+        <div class="actions">
+          <button class="urge wide" data-act="urge">💪 I resisted an urge</button>
+          <button class="danger wide" data-act="slip">I slipped — restart</button>
+        </div>
+        ${(h.slips || []).length ? `
+        <details>
+          <summary>History</summary>
+          <ul class="log">
+            ${[...h.slips].reverse().map(s => `<li><b>${fmtDate(s.at)}</b> — after ${fmtDur(s.lasted)}${s.note ? ` · ${esc(s.note)}` : ""}</li>`).join("")}
+          </ul>
+        </details>` : ""}
+      </section>`).join("");
+    tick();
+  }
+
+  function tick() {
+    const now = Date.now();
+    document.querySelectorAll(".card[data-id]").forEach(card => {
+      const h = state.habits.find(x => x.id === card.dataset.id);
+      if (!h) return;
+      const ms = Math.max(0, now - h.start);
+      const days = ms / DAY;
+      const f = (k) => card.querySelector(`[data-f="${k}"]`);
+      f("d").textContent = Math.floor(days);
+      f("h").textContent = Math.floor(ms % DAY / 3600000);
+      f("m").textContent = Math.floor(ms % 3600000 / 60000);
+      f("s").textContent = Math.floor(ms % 60000 / 1000);
+      f("best").textContent = fmtDur(bestStreak(h, now));
+      if (f("saved")) f("saved").textContent = "$" + (h.cost * days).toFixed(2);
+
+      const next = MILESTONES.find(([d]) => days < d);
+      const prev = [...MILESTONES].reverse().find(([d]) => days >= d);
+      if (next) {
+        const from = prev ? prev[0] : 0;
+        const pct = ((days - from) / (next[0] - from)) * 100;
+        f("bar").style.width = pct.toFixed(1) + "%";
+        f("next").textContent = `Next milestone: ${next[1]} — ${fmtDur((next[0] - days) * DAY)} to go`;
+      } else {
+        f("bar").style.width = "100%";
+        f("next").textContent = "Every milestone reached. Keep walking in freedom!";
+      }
+      const badgeHtml = MILESTONES.map(([d, label]) => `<span class="badge ${days >= d ? "on" : ""}">${days >= d ? "✓ " : ""}${label}</span>`).join("");
+      if (f("badges").innerHTML !== badgeHtml) f("badges").innerHTML = badgeHtml;
+
+      // Celebrate newly reached milestones once
+      const reached = prev ? prev[0] : 0;
+      if (reached > (h.celebrated || 0)) {
+        h.celebrated = reached; save();
+        toast(`🎉 ${h.name}: ${prev[1]} free! Praise God — keep going!`);
+      }
+    });
+  }
+
+  function openHabitDialog(h) {
+    editingId = h ? h.id : null;
+    $("dialogTitle").textContent = h ? "Edit" : "Add something to quit";
+    $("fName").value = h ? h.name : "";
+    $("fStart").value = toLocalInput(h ? h.start : Date.now());
+    $("fStart").max = toLocalInput(Date.now());
+    $("fCost").value = h && h.cost ? h.cost : "";
+    $("fWhy").value = h ? h.why || "" : "";
+    $("habitDialog").showModal();
+  }
+
+  $("addBtn").onclick = () => openHabitDialog(null);
+  $("cancelBtn").onclick = () => $("habitDialog").close();
+  $("habitForm").onsubmit = (e) => {
+    e.preventDefault();
+    const start = Math.min(new Date($("fStart").value).getTime() || Date.now(), Date.now());
+    const data = {
+      name: $("fName").value.trim(),
+      start,
+      cost: parseFloat($("fCost").value) || 0,
+      why: $("fWhy").value.trim(),
+    };
+    if (!data.name) return;
+    if (editingId) {
+      const h = state.habits.find(x => x.id === editingId);
+      Object.assign(h, data);
+      h.celebrated = Math.max(0, ...MILESTONES.filter(([d]) => (Date.now() - start) / DAY >= d).map(([d]) => d));
+    } else {
+      const days = (Date.now() - start) / DAY;
+      state.habits.push({
+        id: uid(), ...data, best: 0, urges: 0, slips: [],
+        celebrated: Math.max(0, ...MILESTONES.filter(([d]) => days >= d).map(([d]) => d)),
+      });
+    }
+    save(); $("habitDialog").close(); render();
+  };
+
+  $("list").onclick = (e) => {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const id = btn.closest(".card").dataset.id;
+    const h = state.habits.find(x => x.id === id);
+    switch (btn.dataset.act) {
+      case "urge":
+        h.urges = (h.urges || 0) + 1; save(); render();
+        toast("Victory! That urge lost. 🙌");
+        break;
+      case "slip":
+        slipId = id; $("slipNote").value = ""; $("slipDialog").showModal();
+        break;
+      case "edit":
+        openHabitDialog(h);
+        break;
+      case "delete":
+        if (confirm(`Delete "${h.name}" and all its history?`)) {
+          state.habits = state.habits.filter(x => x.id !== id); save(); render();
+        }
+        break;
+    }
+  };
+
+  $("slipCancel").onclick = () => $("slipDialog").close();
+  $("slipForm").onsubmit = (e) => {
+    e.preventDefault();
+    const h = state.habits.find(x => x.id === slipId);
+    const now = Date.now();
+    const lasted = now - h.start;
+    h.best = Math.max(h.best || 0, lasted);
+    h.slips = h.slips || [];
+    h.slips.push({ at: now, lasted, note: $("slipNote").value.trim() });
+    h.start = now;
+    h.celebrated = 0;
+    save(); $("slipDialog").close(); render();
+    toast("New mercies this morning. Day 1 starts now.");
+  };
+
+  $("exportBtn").onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `freedom-counter-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $("importBtn").onclick = () => $("importFile").click();
+  $("importFile").onchange = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (!Array.isArray(data.habits)) throw new Error();
+      if (!confirm("Replace current data with this backup?")) return;
+      state = data; save(); render(); toast("Backup restored.");
+    } catch { alert("That file isn't a valid backup."); }
+    e.target.value = "";
+  };
+
+  render();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
